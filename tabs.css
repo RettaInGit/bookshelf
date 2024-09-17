@@ -1,0 +1,57 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#saveTabs, #restoreTabs {
+    padding: 10px 20px;
+    background-color: #4285F4;
+    color: white;
+    border: none;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#tabList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#tabList li {
+    overflow: hidden;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f1f1f1;
+    border-radius: 4px;
+}
+
+#tabList a {
+    text-decoration: none;
+    color: #1A0DAB;
+    font-size: 16px;
+}
+
+#tabList a:hover {
+    text-decoration: underline;
+}
+
+.removeButton {
+    float: right;
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 18px;
+}
