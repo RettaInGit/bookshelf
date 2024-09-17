@@ -14,7 +14,7 @@ h1 {
     margin-bottom: 20px;
 }
 
-#saveTabs, #restoreTabs {
+#saveTabs, #restoreAllTabs {
     padding: 10px 20px;
     background-color: #4285F4;
     color: white;
@@ -24,26 +24,26 @@ h1 {
     cursor: pointer;
 }
 
-#tabList {
+.tabList {
     list-style-type: none;
     padding: 0;
 }
 
-#tabList li {
+.tabList li {
     overflow: hidden;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #f1f1f1;
+    padding: 5px;
+    margin-bottom: 5px;
+    background-color: #f9f9f9;
     border-radius: 4px;
 }
 
-#tabList a {
+.tabList a {
     text-decoration: none;
     color: #1A0DAB;
-    font-size: 16px;
+    font-size: 14px;
 }
 
-#tabList a:hover {
+.tabList a:hover {
     text-decoration: underline;
 }
 
@@ -54,4 +54,50 @@ h1 {
     color: red;
     cursor: pointer;
     font-size: 18px;
+}
+
+#categoryInput {
+    width: 200px;
+    padding: 5px;
+    margin-right: 10px;
+}
+
+.tabGroup {
+    margin-bottom: 30px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.tabGroup h2 {
+    display: inline-block;
+    margin: 0 10px 10px 0;
+}
+
+.removeGroupButton {
+    float: right;
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.removeTabButton {
+    float: right;
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.restoreGroupButton {
+    padding: 5px 10px;
+    background-color: #34A853;
+    color: white;
+    border: none;
+    margin-top: 10px;
+    border-radius: 4px;
+    cursor: pointer;
 }
