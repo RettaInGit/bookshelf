@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add a remove button for the group
             const removeGroupButton = document.createElement('button');
-            removeGroupButton.textContent = 'X';
+            removeGroupButton.textContent = 'Remove';
             removeGroupButton.title = 'Remove this group';
             removeGroupButton.className = 'removeGroupButton';
             removeGroupButton.addEventListener('click', () => {
