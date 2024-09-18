@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Append the new tabs to the existing group
                     savedTabGroups[existingGroupIndex].tabs = savedTabGroups[existingGroupIndex].tabs.concat(tabsData);
                 } else {
-                    // Add a new group
-                    savedTabGroups.push({
+                    // Add a new group to the start of the array
+                    savedTabGroups.unshift({
                         category: category,
                         tabs: tabsData
                     });
