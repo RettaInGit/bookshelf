@@ -79,13 +79,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupContainer = document.createElement('div');
             groupContainer.className = 'tabGroup';
 
+            // Create a container for the group header and master checkbox
+            const groupHeaderContainer = document.createElement('div');
+            groupHeaderContainer.className = 'groupHeaderContainer';
+
+            // Create the master checkbox
+            const masterCheckbox = document.createElement('input');
+            masterCheckbox.type = 'checkbox';
+            masterCheckbox.className = 'masterCheckbox';
+            masterCheckbox.title = 'Select/Deselect All Tabs in this Group';
+
+            // Add an event listener to the master checkbox
+            masterCheckbox.addEventListener('change', (event) => {
+                toggleGroupCheckboxes(groupIndex, event.target.checked);
+            });
+
             // Create a header for the group
             const groupHeader = document.createElement('h2');
             groupHeader.textContent = group.category;
 
+            // Append the master checkbox and group header to the container
+            groupHeaderContainer.appendChild(masterCheckbox);
+            groupHeaderContainer.appendChild(groupHeader);
+
             // Add a remove button for the group
             const removeGroupButton = document.createElement('button');
-            removeGroupButton.textContent = '✕';
+            removeGroupButton.textContent = 'X';
             removeGroupButton.title = 'Remove this group';
             removeGroupButton.className = 'removeGroupButton';
             removeGroupButton.addEventListener('click', () => {
@@ -98,6 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             group.tabs.forEach((tab, tabIndex) => {
                 const listItem = document.createElement('li');
+
+                // Create a checkbox for selection
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'tabCheckbox';
+                checkbox.dataset.tabIndex = tabIndex;
+                checkbox.dataset.groupIndex = groupIndex;
+
+                // Add event listener to update master checkbox when individual checkbox changes
+                checkbox.addEventListener('change', () => {
+                    updateMasterCheckboxState(groupIndex);
+                });
 
                 const link = document.createElement('a');
                 link.href = tab.url;
@@ -112,14 +143,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     removeTabFromGroup(groupIndex, tabIndex);
                 });
 
-                listItem.appendChild(removeTabButton);
+                listItem.appendChild(checkbox);
                 listItem.appendChild(link);
+                listItem.appendChild(removeTabButton);
                 tabList.appendChild(listItem);
             });
 
-            groupContainer.appendChild(removeGroupButton);
-            groupContainer.appendChild(groupHeader);
-            groupContainer.appendChild(tabList);
+            // Add a button to remove selected tabs
+            const removeSelectedButton = document.createElement('button');
+            removeSelectedButton.textContent = 'Remove Selected Tabs';
+            removeSelectedButton.className = 'removeSelectedButton';
+            removeSelectedButton.addEventListener('click', () => {
+                removeSelectedTabs(groupIndex);
+            });
 
             // Add a restore button for the group
             const restoreGroupButton = document.createElement('button');
@@ -129,9 +165,85 @@ document.addEventListener('DOMContentLoaded', () => {
                 restoreTabGroup(group);
             });
 
+            // Append elements to the group container
+            groupContainer.appendChild(removeGroupButton);
+            groupContainer.appendChild(groupHeaderContainer);
+            groupContainer.appendChild(tabList);
+            groupContainer.appendChild(removeSelectedButton);
             groupContainer.appendChild(restoreGroupButton);
 
             tabGroupsContainer.appendChild(groupContainer);
+
+            // Initialize the master checkbox state
+            updateMasterCheckboxState(groupIndex);
+        });
+    }
+    
+    // Function to toggle all checkboxes in a group
+    function toggleGroupCheckboxes(groupIndex, isChecked) {
+        const groupContainer = tabGroupsContainer.children[groupIndex];
+        const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = isChecked;
+        });
+    }
+
+    // Function to update the master checkbox state based on individual checkboxes
+    function updateMasterCheckboxState(groupIndex) {
+        const groupContainer = tabGroupsContainer.children[groupIndex];
+        const masterCheckbox = groupContainer.querySelector('.masterCheckbox');
+        const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+
+        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+
+        masterCheckbox.checked = allChecked;
+        masterCheckbox.indeterminate = !allChecked && anyChecked;
+    }
+
+    // Function to remove selected tabs from a group
+    function removeSelectedTabs(groupIndex) {
+        chrome.storage.local.get('savedTabGroups', (data) => {
+            const tabGroups = data.savedTabGroups || [];
+            const group = tabGroups[groupIndex];
+
+            // Get all checkboxes in this group's tab list
+            const groupContainer = tabGroupsContainer.children[groupIndex];
+            const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+
+            // Collect the indices of tabs to remove
+            const indicesToRemove = [];
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    indicesToRemove.push(parseInt(checkbox.dataset.tabIndex));
+                }
+            });
+
+            if (indicesToRemove.length === 0) {
+                alert('Please select at least one tab to remove.');
+                return;
+            }
+
+            // Confirm to remove the tabs
+            if (!confirm('Are you sure you want to remove the selected tabs?')) {
+                return;
+            }
+
+            // Remove tabs starting from the highest index to avoid index shifting
+            indicesToRemove.sort((a, b) => b - a).forEach((tabIndex) => {
+                group.tabs.splice(tabIndex, 1);
+            });
+
+            // Remove the group if no tabs are left
+            if (group.tabs.length === 0) {
+                tabGroups.splice(groupIndex, 1);
+            }
+
+            // Save the updated tab groups to storage
+            chrome.storage.local.set({ 'savedTabGroups': tabGroups }, () => {
+                displayTabGroups(tabGroups);
+            });
         });
     }
 

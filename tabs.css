@@ -30,6 +30,8 @@ h1 {
 }
 
 .tabList li {
+    display: flex;
+    align-items: center;
     overflow: hidden;
     padding: 5px;
     margin-bottom: 5px;
@@ -41,6 +43,7 @@ h1 {
     text-decoration: none;
     color: #1A0DAB;
     font-size: 14px;
+    flex-grow: 1;
 }
 
 .tabList a:hover {
@@ -84,20 +87,39 @@ h1 {
 }
 
 .removeTabButton {
-    float: right;
     background-color: transparent;
     border: none;
     color: red;
     cursor: pointer;
     font-size: 16px;
+    margin-left: 5px;
 }
 
-.restoreGroupButton {
+.restoreGroupButton, .removeSelectedButton {
     padding: 5px 10px;
     background-color: #34A853;
     color: white;
     border: none;
     margin-top: 10px;
+    margin-right: 5px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+.removeSelectedButton {
+    background-color: #d9534f;
+}
+
+.groupHeaderContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.groupHeaderContainer .masterCheckbox {
+    margin-right: 10px;
+}
+
+.tabCheckbox {
+    margin-right: 10px;
 }
