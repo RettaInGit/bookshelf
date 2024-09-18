@@ -102,6 +102,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupHeaderContainer = document.createElement('div');
             groupHeaderContainer.className = 'groupHeaderContainer';
 
+            // Add an event listener to toggle collapse/expand
+            groupHeaderContainer.addEventListener('click', (event) => {
+                // Check if the clicked element is the header container or the group title
+                if ((event.target === groupHeaderContainer) || ((event.target === groupTitle) && (editGroupButton.dataset.mode === 'edit'))) {
+                    toggleGroupCollapse(groupIndex);
+                }
+            });
+
             // Create the master checkbox
             const masterCheckbox = document.createElement('input');
             masterCheckbox.type = 'checkbox';
@@ -157,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create a list for the tabs in the group
             const tabList = document.createElement('ul');
             tabList.className = 'tabList';
+            tabList.style.display = 'block'; // Ensure it's displayed by default
 
             group.tabs.forEach((tab, tabIndex) => {
                 const listItem = document.createElement('li');
@@ -195,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create a footer container for the group
             const groupFooterContainer = document.createElement('div');
             groupFooterContainer.className = 'groupFooterContainer';
+            groupFooterContainer.style.display = 'flex'; // Ensure it's displayed by default
 
             // Add a button to remove selected tabs
             const removeSelectedButton = document.createElement('button');
@@ -218,6 +228,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Initialize the master checkbox state
             updateMasterCheckboxState(groupIndex);
         });
+    }
+
+    // Function to collapse or expand the group
+    function toggleGroupCollapse(groupIndex) {
+        const groupContainer = tabGroupsContainer.children[groupIndex];
+        const tabList = groupContainer.querySelector('.tabList');
+        const groupFooterContainer = groupContainer.querySelector('.groupFooterContainer');
+
+        // Toggle the display style
+        if (tabList.style.display === 'none') {
+            tabList.style.display = 'block';
+            groupFooterContainer.style.display = 'flex';
+        } else {
+            tabList.style.display = 'none';
+            groupFooterContainer.style.display = 'none';
+        }
     }
 
     // Function to toggle all checkboxes in a group
