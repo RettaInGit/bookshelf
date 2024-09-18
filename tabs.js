@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveTabsButton = document.getElementById('saveTabs');
     const restoreAllTabsButton = document.getElementById('restoreAllTabs');
     const tabGroupsContainer = document.getElementById('tabGroups');
+    let savedTabGroups = [];
 
     // Load saved tab groups when the page loads
     loadSavedTabGroups();
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Retrieve saved tab groups to determine the default category name
             chrome.storage.local.get('savedTabGroups', (data) => {
-                const savedTabGroups = data.savedTabGroups || [];
+                savedTabGroups = data.savedTabGroups || [];
 
                 // Generate default category name as 'Book X'
                 let groupNumber = savedTabGroups.length + 1;
@@ -42,10 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 category = defaultCategoryName;
 
-                // Add a new group to the start of the array
+                // Add the new group to the start of the array with collapsed set to false
                 savedTabGroups.unshift({
                     category: category,
-                    tabs: tabsData
+                    tabs: tabsData,
+                    collapsed: false
                 });
 
                 // Save the updated tab groups to storage
@@ -72,8 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to load saved tab groups from storage
     function loadSavedTabGroups() {
         chrome.storage.local.get('savedTabGroups', (data) => {
-            const tabGroups = data.savedTabGroups || [];
-            displayTabGroups(tabGroups);
+            savedTabGroups = data.savedTabGroups || [];
+            displayTabGroups(savedTabGroups);
         });
     }
 
@@ -85,6 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create a container for each group
             const groupContainer = document.createElement('div');
             groupContainer.className = 'tabGroup';
+
+            // Ensure group.collapsed is defined
+            if (group.collapsed === undefined) {
+                group.collapsed = false; // default to expanded
+            }
 
             // Create a header container for the group
             const groupHeaderContainer = document.createElement('div');
@@ -153,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create a list for the tabs in the group
             const tabList = document.createElement('ul');
             tabList.className = 'tabList';
-            tabList.style.display = 'block'; // Ensure it's displayed by default
+            tabList.style.display = group.collapsed ? 'none' : 'block';
 
             group.tabs.forEach((tab, tabIndex) => {
                 const listItem = document.createElement('li');
@@ -192,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create a footer container for the group
             const groupFooterContainer = document.createElement('div');
             groupFooterContainer.className = 'groupFooterContainer';
-            groupFooterContainer.style.display = 'flex'; // Ensure it's displayed by default
+            groupFooterContainer.style.display = group.collapsed ? 'none' : 'flex';
 
             // Add a button to remove selected tabs
             const removeSelectedButton = document.createElement('button');
@@ -203,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Append the removeSelectedButton to the footer container
-            groupFooterContainer.appendChild(removeSelectedButton)
+            groupFooterContainer.appendChild(removeSelectedButton);
 
             // Append elements to the group container
             groupContainer.appendChild(groupHeaderContainer);
@@ -218,20 +225,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to collapse or expand the group
+    // Function to toggle group collapse/expand state
     function toggleGroupCollapse(groupIndex) {
         const groupContainer = tabGroupsContainer.children[groupIndex];
         const tabList = groupContainer.querySelector('.tabList');
         const groupFooterContainer = groupContainer.querySelector('.groupFooterContainer');
 
         // Toggle the display style
-        if (tabList.style.display === 'none') {
+        if (savedTabGroups[groupIndex].collapsed) {
             tabList.style.display = 'block';
             groupFooterContainer.style.display = 'flex';
+            savedTabGroups[groupIndex].collapsed = false;
         } else {
             tabList.style.display = 'none';
             groupFooterContainer.style.display = 'none';
+            savedTabGroups[groupIndex].collapsed = true;
         }
+
+        // Save the updated savedTabGroups to chrome.storage.local
+        chrome.storage.local.set({ 'savedTabGroups': savedTabGroups });
     }
 
     // Function to toggle all checkboxes in a group
