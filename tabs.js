@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupContainer = document.createElement('div');
             groupContainer.className = 'tabGroup';
 
-            // Create a container for the group header and master checkbox
+            // Create a header container for the group
             const groupHeaderContainer = document.createElement('div');
             groupHeaderContainer.className = 'groupHeaderContainer';
 
@@ -104,13 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleGroupCheckboxes(groupIndex, event.target.checked);
             });
 
-            // Create a header for the group
-            const groupHeader = document.createElement('h2');
-            groupHeader.textContent = group.category;
-
-            // Append the master checkbox and group header to the container
-            groupHeaderContainer.appendChild(masterCheckbox);
-            groupHeaderContainer.appendChild(groupHeader);
+            // Create a title for the group
+            const groupTitle = document.createElement('h2');
+            groupTitle.textContent = group.category;
+            groupTitle.className = 'groupTitle';
 
             // Add a remove button for the group
             const removeGroupButton = document.createElement('button');
@@ -120,6 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
             removeGroupButton.addEventListener('click', () => {
                 removeTabGroup(groupIndex);
             });
+
+            // Append the elements to the header container
+            groupHeaderContainer.appendChild(masterCheckbox);
+            groupHeaderContainer.appendChild(groupTitle);
+            groupHeaderContainer.appendChild(removeGroupButton);
 
             // Create a list for the tabs in the group
             const tabList = document.createElement('ul');
@@ -176,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // Append elements to the group container
-            groupContainer.appendChild(removeGroupButton);
             groupContainer.appendChild(groupHeaderContainer);
             groupContainer.appendChild(tabList);
             groupContainer.appendChild(removeSelectedButton);
@@ -188,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateMasterCheckboxState(groupIndex);
         });
     }
-    
+
     // Function to toggle all checkboxes in a group
     function toggleGroupCheckboxes(groupIndex, isChecked) {
         const groupContainer = tabGroupsContainer.children[groupIndex];

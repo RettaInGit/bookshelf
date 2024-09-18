@@ -27,6 +27,7 @@ h1 {
 .tabList {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 .tabList li {
@@ -50,13 +51,8 @@ h1 {
     text-decoration: underline;
 }
 
-.removeButton {
-    float: right;
-    background-color: transparent;
-    border: none;
-    color: red;
-    cursor: pointer;
-    font-size: 18px;
+.tabCheckbox {
+    margin-right: 10px;
 }
 
 #categoryInput {
@@ -72,18 +68,31 @@ h1 {
     border-radius: 4px;
 }
 
-.tabGroup h2 {
-    display: inline-block;
-    margin: 0 10px 10px 0;
+.groupHeaderContainer {
+    display: flex;
+    align-items: center;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
 }
 
-.removeGroupButton {
-    float: right;
+.groupHeaderContainer .masterCheckbox {
+    margin-right: 10px;
+}
+
+.groupHeaderContainer .groupTitle {
+    flex-grow: 1;
+    margin: 0;
+}
+
+.groupHeaderContainer .removeGroupButton {
     background-color: transparent;
     border: none;
     color: red;
     cursor: pointer;
     font-size: 18px;
+    margin-left: 10px;
 }
 
 .removeTabButton {
@@ -108,18 +117,4 @@ h1 {
 
 .removeSelectedButton {
     background-color: #d9534f;
-}
-
-.groupHeaderContainer {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.groupHeaderContainer .masterCheckbox {
-    margin-right: 10px;
-}
-
-.tabCheckbox {
-    margin-right: 10px;
 }
