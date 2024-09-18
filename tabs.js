@@ -9,11 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for the 'Save Current Tabs' button
     saveTabsButton.addEventListener('click', () => {
-        const category = categoryInput.value.trim();
-        if (category === '') {
-            alert('Please enter a category name.');
-            return;
-        }
+        let category = categoryInput.value.trim();
 
         // Query all open tabs in the current window
         chrome.tabs.query({ currentWindow: true }, (tabs) => {
@@ -32,9 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: tab.url
             }));
 
-            // Save tabs under the specified category
+            // Retrieve saved tab groups to determine the default category name
             chrome.storage.local.get('savedTabGroups', (data) => {
                 const savedTabGroups = data.savedTabGroups || [];
+
+                if (category === '') {
+                    // Generate default category name as 'Book X'
+                    category = 'Book ' + (savedTabGroups.length + 1);
+                }
 
                 // Check if the category already exists
                 const existingGroupIndex = savedTabGroups.findIndex(group => group.category === category);
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editGroupButton.textContent = 'Edit';
             editGroupButton.title = 'Edit group title';
             editGroupButton.className = 'editGroupButton';
-            editGroupButton.dataset.mode = 'edit'; // Add a data attribute to track mode
+            editGroupButton.dataset.mode = 'edit';
             editGroupButton.addEventListener('click', () => {
                 toggleEditGroupTitle(groupIndex);
             });
@@ -287,9 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Remove keypress handler
                     groupTitle.onkeypress = null;
-
-                    // Update the display in case titles are sorted or need re-rendering
-                    // Optionally, you can call: displayTabGroups(savedTabGroups);
                 });
             });
         }
