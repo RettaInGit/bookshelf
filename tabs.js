@@ -192,6 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 tabList.appendChild(listItem);
             });
 
+            // Create a footer container for the group
+            const groupFooterContainer = document.createElement('div');
+            groupFooterContainer.className = 'groupFooterContainer';
+
             // Add a button to remove selected tabs
             const removeSelectedButton = document.createElement('button');
             removeSelectedButton.textContent = 'Remove Selected Tabs';
@@ -200,11 +204,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeSelectedTabs(groupIndex);
             });
 
+            // Append the removeSelectedButton to the footer container
+            groupFooterContainer.appendChild(removeSelectedButton)
+
             // Append elements to the group container
             groupContainer.appendChild(groupHeaderContainer);
             groupContainer.appendChild(tabList);
-            groupContainer.appendChild(removeSelectedButton);
+            groupContainer.appendChild(groupFooterContainer);
 
+            // Append the group container to the main container
             tabGroupsContainer.appendChild(groupContainer);
 
             // Initialize the master checkbox state
