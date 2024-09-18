@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const saveTabsButton = document.getElementById('saveTabs');
     const restoreAllTabsButton = document.getElementById('restoreAllTabs');
-    const categoryInput = document.getElementById('categoryInput');
     const tabGroupsContainer = document.getElementById('tabGroups');
 
     // Load saved tab groups when the page loads
@@ -9,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for the 'Save Current Tabs' button
     saveTabsButton.addEventListener('click', () => {
-        let category = categoryInput.value.trim();
+        let category = '';
 
         // Query all open tabs in the current window
         chrome.tabs.query({ currentWindow: true }, (tabs) => {
@@ -32,36 +31,25 @@ document.addEventListener('DOMContentLoaded', () => {
             chrome.storage.local.get('savedTabGroups', (data) => {
                 const savedTabGroups = data.savedTabGroups || [];
 
-                if (category === '') {
-                    // Generate default category name as 'Book X'
-                    let groupNumber = savedTabGroups.length + 1;
-                    let defaultCategoryName = 'Book ' + groupNumber;
+                // Generate default category name as 'Book X'
+                let groupNumber = savedTabGroups.length + 1;
+                let defaultCategoryName = 'Book ' + groupNumber;
 
-                    // Check if this name already exists and adjust if necessary
-                    while (savedTabGroups.some(group => group.category === defaultCategoryName)) {
-                        groupNumber++;
-                        defaultCategoryName = 'Book ' + groupNumber;
-                    }
-                    category = defaultCategoryName;
+                // Check if this name already exists and adjust if necessary
+                while (savedTabGroups.some(group => group.category === defaultCategoryName)) {
+                    groupNumber++;
+                    defaultCategoryName = 'Book ' + groupNumber;
                 }
+                category = defaultCategoryName;
 
-                // Check if the category already exists
-                const existingGroupIndex = savedTabGroups.findIndex(group => group.category === category);
-                if (existingGroupIndex !== -1) {
-                    // Append the new tabs to the existing group
-                    savedTabGroups[existingGroupIndex].tabs = savedTabGroups[existingGroupIndex].tabs.concat(tabsData);
-                } else {
-                    // Add a new group to the start of the array
-                    savedTabGroups.unshift({
-                        category: category,
-                        tabs: tabsData
-                    });
-                }
+                // Add a new group to the start of the array
+                savedTabGroups.unshift({
+                    category: category,
+                    tabs: tabsData
+                });
 
                 // Save the updated tab groups to storage
                 chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
-                    // Clear the category input
-                    categoryInput.value = '';
                     // Update the tab groups display
                     displayTabGroups(savedTabGroups);
                 });
