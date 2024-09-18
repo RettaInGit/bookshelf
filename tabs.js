@@ -17,7 +17,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Query all open tabs in the current window
         chrome.tabs.query({ currentWindow: true }, (tabs) => {
-            const tabsData = tabs.map(tab => ({
+            // Filter tabs to only include those with URLs starting with 'http'
+            const filteredTabs = tabs.filter(tab => tab.url.startsWith('http'));
+
+            // Check if there are any tabs to save
+            if (filteredTabs.length === 0) {
+                alert('No tabs with URLs starting with "http" found.');
+                return;
+            }
+
+            // Map the filtered tabs to get their title and URL
+            const tabsData = filteredTabs.map(tab => ({
                 title: tab.title,
                 url: tab.url
             }));
