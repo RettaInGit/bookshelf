@@ -108,6 +108,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupTitle = document.createElement('h2');
             groupTitle.textContent = group.category;
             groupTitle.className = 'groupTitle';
+            groupTitle.contentEditable = false;
+
+            // Create an edit button for the group title
+            const editGroupButton = document.createElement('button');
+            editGroupButton.textContent = 'Edit';
+            editGroupButton.title = 'Edit group title';
+            editGroupButton.className = 'editGroupButton';
+            editGroupButton.dataset.mode = 'edit'; // Add a data attribute to track mode
+            editGroupButton.addEventListener('click', () => {
+                toggleEditGroupTitle(groupIndex);
+            });
 
             // Add a remove button for the group
             const removeGroupButton = document.createElement('button');
@@ -118,9 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeTabGroup(groupIndex);
             });
 
-            // Append the elements to the header container
+            // Append elements to the header container
             groupHeaderContainer.appendChild(masterCheckbox);
             groupHeaderContainer.appendChild(groupTitle);
+            groupHeaderContainer.appendChild(editGroupButton);
             groupHeaderContainer.appendChild(removeGroupButton);
 
             // Create a list for the tabs in the group
@@ -211,6 +223,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
         masterCheckbox.checked = allChecked;
         masterCheckbox.indeterminate = !allChecked && anyChecked;
+    }
+
+    // Function to toggle between edit and save modes for the group title
+    function toggleEditGroupTitle(groupIndex) {
+        const groupContainer = tabGroupsContainer.children[groupIndex];
+        const groupHeaderContainer = groupContainer.querySelector('.groupHeaderContainer');
+        const groupTitle = groupHeaderContainer.querySelector('.groupTitle');
+        const editGroupButton = groupHeaderContainer.querySelector('.editGroupButton');
+
+        if (editGroupButton.dataset.mode === 'edit') {
+            // Switch to edit mode
+            groupTitle.contentEditable = true;
+            groupTitle.focus();
+
+            // Change button to 'Save'
+            editGroupButton.textContent = 'Save';
+            editGroupButton.title = 'Save group title';
+            editGroupButton.dataset.mode = 'save';
+
+            // Handle Enter key to save
+            groupTitle.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent newline
+                    toggleEditGroupTitle(groupIndex); // Save on Enter key
+                }
+            };
+        } else {
+            // Switch to view mode (save changes)
+            const newTitle = groupTitle.textContent.trim();
+
+            if (newTitle === '') {
+                alert('Group title cannot be empty.');
+                groupTitle.focus();
+                return;
+            }
+
+            // Retrieve the saved groups
+            chrome.storage.local.get('savedTabGroups', (data) => {
+                const savedTabGroups = data.savedTabGroups || [];
+                const group = savedTabGroups[groupIndex];
+
+                // Check if a group with the new title already exists
+                const existingGroupIndex = savedTabGroups.findIndex(g => g.category === newTitle);
+                if (existingGroupIndex !== -1 && existingGroupIndex !== groupIndex) {
+                    alert('A group with this title already exists. Please choose a different title.');
+                    groupTitle.focus();
+                    return;
+                }
+
+                // Update the group title
+                group.category = newTitle;
+
+                // Save the updated tab groups to storage
+                chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
+                    // Disable contentEditable
+                    groupTitle.contentEditable = false;
+
+                    // Reset the edit button
+                    editGroupButton.textContent = 'Edit';
+                    editGroupButton.title = 'Edit group title';
+                    editGroupButton.dataset.mode = 'edit';
+
+                    // Remove keypress handler
+                    groupTitle.onkeypress = null;
+
+                    // Update the display in case titles are sorted or need re-rendering
+                    // Optionally, you can call: displayTabGroups(savedTabGroups);
+                });
+            });
+        }
     }
 
     // Function to remove selected tabs from a group
