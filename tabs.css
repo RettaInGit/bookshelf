@@ -24,6 +24,39 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
+#pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f1f1f1;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+#headerLeft, #headerCenter, #headerRight {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+#headerCenter {
+    justify-content: center;
+}
+
+#headerRight {
+    justify-content: flex-end;
+}
+
+#homeLink {
+    text-decoration: none;
+    font-size: 24px;
+    color: #333;
+}
+
+#homeLink:hover {
+    text-decoration: underline;
+}
+
 #controls {
     text-align: center;
     margin-bottom: 20px;
@@ -35,6 +68,31 @@ input[type="checkbox"] {
 
 #saveTabs:hover, #restoreAllTabs:hover {
     background-color: #3071e8;
+}
+
+#settingsButton {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+#settingsButton:hover {
+    color: #666;
+}
+
+#settingsButton .iconImage {
+    width: 36px;
+    height: 36px;
+}
+
+#mainContent {
+    padding: 20px;
+}
+
+#tabsContent, #settingsContent {
+    width: 100%;
 }
 
 .tabList {

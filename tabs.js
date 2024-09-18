@@ -1,11 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     const saveTabsButton = document.getElementById('saveTabs');
     const restoreAllTabsButton = document.getElementById('restoreAllTabs');
+    const settingsButton = document.getElementById('settingsButton');
+    const homeLink = document.getElementById('homeLink');
     const tabGroupsContainer = document.getElementById('tabGroups');
+    const tabsContent = document.getElementById('tabsContent');
+    const settingsContent = document.getElementById('settingsContent');
     let savedTabGroups = [];
 
     // Load saved tab groups when the page loads
     loadSavedTabGroups();
+
+    // Event listener for the 'Home' link (extension name)
+    homeLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent default link behavior
+
+        // Show tabs content and hide settings content
+        tabsContent.style.display = 'block';
+        settingsContent.style.display = 'none';
+
+        // Show center buttons when on tabs page
+        saveTabsButton.style.display = '';
+        restoreAllTabsButton.style.display = '';
+    });
 
     // Event listener for the 'Save Current Tabs' button
     saveTabsButton.addEventListener('click', () => {
@@ -69,6 +86,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
+    });
+
+    // Event listener for the 'Settings' button
+    settingsButton.addEventListener('click', () => {
+        // Hide tabs content and show settings content
+        tabsContent.style.display = 'none';
+        settingsContent.style.display = 'block';
+
+        // Optionally, hide center buttons when in settings page
+        saveTabsButton.style.display = 'none';
+        restoreAllTabsButton.style.display = 'none';
     });
 
     // Function to load saved tab groups from storage

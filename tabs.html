@@ -6,11 +6,36 @@
     <link rel="stylesheet" href="tabs.css">
 </head>
 <body>
-    <h1>Tab Manager</h1>
-    <div id="controls">
-        <button id="saveTabs">Save Current Tabs</button>
-        <button id="restoreAllTabs">Restore All Tabs</button>
+    <!-- Header -->
+    <header id="pageHeader">
+        <div id="headerLeft">
+            <a href="#" id="homeLink">Tab Manager</a>
+        </div>
+        <div id="headerCenter">
+            <button id="saveTabs">Save Current Tabs</button>
+            <button id="restoreAllTabs">Restore All Tabs</button>
+        </div>
+        <div id="headerRight">
+            <button id="settingsButton" title="Settings">
+                <img src="icons/gear_icon.png" alt="Settings" class="iconImage">
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div id="mainContent">
+        <!-- Tabs Content -->
+        <div id="tabsContent">
+            <!-- Tab Groups will be displayed here -->
+            <div id="tabGroups"></div>
+        </div>
+
+        <!-- Settings Content (Initially Hidden) -->
+        <div id="settingsContent" style="display: none;">
+            <h2>Settings</h2>
+            <!-- Add your settings options here -->
+            <p>Settings page content will go here.</p>
+        </div>
     </div>
-    <div id="tabGroups"></div>
 </body>
 </html>
