@@ -106,10 +106,6 @@ button {
     background-color: #3071e8;
 }
 
-.groupHeaderContainer .editGroupButton[data-mode="save"] {
-    color: #28a745;
-}
-
 .groupHeaderContainer .removeGroupButton, .removeSelectedButton, .removeTabButton {
     background-color: #d9534f;
 }

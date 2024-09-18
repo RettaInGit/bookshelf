@@ -34,7 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (category === '') {
                     // Generate default category name as 'Book X'
-                    category = 'Book ' + (savedTabGroups.length + 1);
+                    let groupNumber = savedTabGroups.length + 1;
+                    let defaultCategoryName = 'Book ' + groupNumber;
+
+                    // Check if this name already exists and adjust if necessary
+                    while (savedTabGroups.some(group => group.category === defaultCategoryName)) {
+                        groupNumber++;
+                        defaultCategoryName = 'Book ' + groupNumber;
+                    }
+                    category = defaultCategoryName;
                 }
 
                 // Check if the category already exists
@@ -238,6 +246,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // Switch to edit mode
             groupTitle.contentEditable = true;
             groupTitle.focus();
+
+            // Move cursor to the end of the text using Range and Selection APIs
+            if ((typeof window.getSelection != "undefined") && (typeof document.createRange != "undefined")) {
+                const range = document.createRange();
+                range.selectNodeContents(groupTitle);
+                range.collapse(false); // Collapse the range to the end
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
 
             // Change button to 'Save'
             editGroupButton.textContent = 'Save';
