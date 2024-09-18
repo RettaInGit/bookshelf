@@ -84,6 +84,7 @@ button {
     padding: 10px;
     border-radius: 4px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
 .groupHeaderContainer .masterCheckbox {
@@ -117,6 +118,10 @@ button {
     background-color: #c9302c;
 }
 
-.restoreGroupButton {
+.groupHeaderContainer .restoreGroupButton {
     background-color: #34A853;
+}
+
+.groupHeaderContainer .restoreGroupButton:hover {
+    background-color: #2c8c47;
 }

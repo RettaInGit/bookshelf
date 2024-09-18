@@ -121,7 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleEditGroupTitle(groupIndex);
             });
 
-            // Add a remove button for the group
+            // Create a restore button for the group
+            const restoreGroupButton = document.createElement('button');
+            restoreGroupButton.textContent = 'Restore';
+            restoreGroupButton.title = 'Restore this group';
+            restoreGroupButton.className = 'restoreGroupButton';
+            restoreGroupButton.addEventListener('click', () => {
+                restoreTabGroup(group);
+            });
+
+            // Create a remove button for the group
             const removeGroupButton = document.createElement('button');
             removeGroupButton.textContent = 'Remove';
             removeGroupButton.title = 'Remove this group';
@@ -130,10 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeTabGroup(groupIndex);
             });
 
-            // Append elements to the header container
+            // Append elements to the header container in the desired order
             groupHeaderContainer.appendChild(masterCheckbox);
             groupHeaderContainer.appendChild(groupTitle);
             groupHeaderContainer.appendChild(editGroupButton);
+            groupHeaderContainer.appendChild(restoreGroupButton);
             groupHeaderContainer.appendChild(removeGroupButton);
 
             // Create a list for the tabs in the group
@@ -182,19 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeSelectedTabs(groupIndex);
             });
 
-            // Add a restore button for the group
-            const restoreGroupButton = document.createElement('button');
-            restoreGroupButton.textContent = 'Restore Group Tabs';
-            restoreGroupButton.className = 'restoreGroupButton';
-            restoreGroupButton.addEventListener('click', () => {
-                restoreTabGroup(group);
-            });
-
             // Append elements to the group container
             groupContainer.appendChild(groupHeaderContainer);
             groupContainer.appendChild(tabList);
             groupContainer.appendChild(removeSelectedButton);
-            groupContainer.appendChild(restoreGroupButton);
 
             tabGroupsContainer.appendChild(groupContainer);
 
