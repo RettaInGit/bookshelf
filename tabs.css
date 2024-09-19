@@ -62,11 +62,11 @@ input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
-#saveTabs, #restoreAllTabs {
+#saveTabs {
     padding: 10px 20px;
 }
 
-#saveTabs:hover, #restoreAllTabs:hover {
+#saveTabs:hover {
     background-color: #3071e8;
 }
 

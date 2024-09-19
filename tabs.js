@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const saveTabsButton = document.getElementById('saveTabs');
-    const restoreAllTabsButton = document.getElementById('restoreAllTabs');
     const settingsButton = document.getElementById('settingsButton');
     const homeLink = document.getElementById('homeLink');
     const tabGroupsContainer = document.getElementById('tabGroups');
@@ -21,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show center buttons when on tabs page
         saveTabsButton.style.display = '';
-        restoreAllTabsButton.style.display = '';
     });
 
     // Event listener for the 'Save Current Tabs' button
@@ -76,18 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Event listener for the 'Restore All Tabs' button
-    restoreAllTabsButton.addEventListener('click', () => {
-        chrome.storage.local.get('savedTabGroups', (data) => {
-            const tabGroups = data.savedTabGroups || [];
-            tabGroups.forEach(group => {
-                group.tabs.forEach(tab => {
-                    chrome.tabs.create({ url: tab.url });
-                });
-            });
-        });
-    });
-
     // Event listener for the 'Settings' button
     settingsButton.addEventListener('click', () => {
         // Hide tabs content and show settings content
@@ -96,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Optionally, hide center buttons when in settings page
         saveTabsButton.style.display = 'none';
-        restoreAllTabsButton.style.display = 'none';
     });
 
     // Function to load saved tab groups from storage
