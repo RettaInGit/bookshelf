@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const settingsButton = document.getElementById('settingsButton');
     const homeLink = document.getElementById('homeLink');
+    const searchInput = document.getElementById('searchInput');
+    const settingsButton = document.getElementById('settingsButton');
     const tabGroupsContainer = document.getElementById('tabGroups');
     const tabsContent = document.getElementById('tabsContent');
     const settingsContent = document.getElementById('settingsContent');
@@ -25,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsContent.style.display = 'none';
     });
 
+    // Event listener for the search bar
+    searchInput.addEventListener('input', () => {
+        loadSavedTabGroups();
+    });
+
     // Event listener for the 'Settings' button
     settingsButton.addEventListener('click', () => {
         // Hide tabs content and show settings content
@@ -42,9 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to display tab groups on the page
     function displayTabGroups(tabGroups) {
+        const currentSearchQuery = searchInput.value.trim().toLowerCase();
+        let anyGroupsVisible = false;
+
         tabGroupsContainer.innerHTML = ''; // Clear existing content
 
         tabGroups.forEach((group, groupIndex) => {
+            let anyTabVisible = false;
+
             // Create a container for each group
             const groupContainer = document.createElement('div');
             groupContainer.className = 'tabGroup';
@@ -155,6 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 listItem.appendChild(link);
                 listItem.appendChild(removeTabButton);
                 tabList.appendChild(listItem);
+
+                // Show or hide the tab based on whether the query is included in the title
+                if (tab.title.toLowerCase().includes(currentSearchQuery)) {
+                    listItem.style.display = '';
+                    anyTabVisible = true;
+                } else {
+                    listItem.style.display = 'none';
+                }
             });
 
             // Create a footer container for the group
@@ -178,12 +197,37 @@ document.addEventListener('DOMContentLoaded', () => {
             groupContainer.appendChild(tabList);
             groupContainer.appendChild(groupFooterContainer);
 
+            // Show or hide the group based on whether any tabs are visible
+            if (anyTabVisible) {
+                groupContainer.style.display = '';
+                anyGroupsVisible = true;
+            } else {
+                groupContainer.style.display = 'none';
+            }
+
             // Append the group container to the main container
             tabGroupsContainer.appendChild(groupContainer);
 
             // Initialize the master checkbox state
             updateMasterCheckboxState(groupIndex);
         });
+
+        // Display a message if no tabs match
+        if (!anyGroupsVisible) {
+            if (!document.getElementById('noResultsMessage')) {
+                const noResultsMessage = document.createElement('p');
+                noResultsMessage.id = 'noResultsMessage';
+                noResultsMessage.textContent = 'No tabs match your search.';
+                noResultsMessage.style.textAlign = 'center';
+                noResultsMessage.style.marginTop = '20px';
+                tabGroupsContainer.parentElement.appendChild(noResultsMessage);
+            }
+        } else {
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            if (noResultsMessage) {
+                noResultsMessage.remove();
+            }
+        }
     }
 
     // Function to toggle group collapse/expand state
