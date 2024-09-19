@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to display tab groups on the page
     function displayTabGroups(tabGroups) {
-        const currentSearchQuery = searchInput.value.trim().toLowerCase();
-        let anyGroupsVisible = false;
+        const fragment = document.createDocumentFragment();  // Create fragment to minimizes the number of reflows and repaints
 
-        tabGroupsContainer.innerHTML = ''; // Clear existing content
+        const currentSearchQuery = searchInput.value.trim().toLowerCase();  // Get current filtering query
+        let anyGroupsVisible = false;
 
         tabGroups.forEach((group, groupIndex) => {
             let anyTabVisible = false;
@@ -206,18 +206,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Append the group container to the main container
-            tabGroupsContainer.appendChild(groupContainer);
-
-            // Initialize the master checkbox state
-            updateMasterCheckboxState(groupIndex);
+            fragment.appendChild(groupContainer);
         });
 
+        // Clear existing content and append the fragment
+        tabGroupsContainer.innerHTML = '';
+        tabGroupsContainer.appendChild(fragment);
+
         // Display a message if no tabs match
-        if (!anyGroupsVisible) {
+        if ((tabGroups.length === 0) || (!anyGroupsVisible)) {
             if (!document.getElementById('noResultsMessage')) {
                 const noResultsMessage = document.createElement('p');
                 noResultsMessage.id = 'noResultsMessage';
-                noResultsMessage.textContent = 'No tabs match your search.';
+                noResultsMessage.textContent = tabGroups.length === 0 ? 'No tabs saved. Try adding some.' : 'No tabs match your search.';
                 noResultsMessage.style.textAlign = 'center';
                 noResultsMessage.style.marginTop = '20px';
                 tabGroupsContainer.parentElement.appendChild(noResultsMessage);
@@ -391,9 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Save the updated tab groups to storage
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups }, () => {
-                displayTabGroups(tabGroups);
-            });
+            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
         });
     }
 
@@ -402,9 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.get('savedTabGroups', (data) => {
             const tabGroups = data.savedTabGroups || [];
             tabGroups.splice(groupIndex, 1);
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups }, () => {
-                displayTabGroups(tabGroups);
-            });
+            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
         });
     }
 
@@ -417,9 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tabGroups[groupIndex].tabs.length === 0) {
                 tabGroups.splice(groupIndex, 1);
             }
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups }, () => {
-                displayTabGroups(tabGroups);
-            });
+            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
         });
     }
 
