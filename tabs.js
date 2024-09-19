@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const saveTabsButton = document.getElementById('saveTabs');
     const settingsButton = document.getElementById('settingsButton');
     const homeLink = document.getElementById('homeLink');
     const tabGroupsContainer = document.getElementById('tabGroups');
@@ -24,61 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show tabs content and hide settings content
         tabsContent.style.display = 'block';
         settingsContent.style.display = 'none';
-
-        // Show center buttons when on tabs page
-        saveTabsButton.style.display = '';
-    });
-
-    // Event listener for the 'Save Current Tabs' button
-    saveTabsButton.addEventListener('click', () => {
-        let category = '';
-
-        // Query all open tabs in the current window
-        chrome.tabs.query({ currentWindow: true }, (tabs) => {
-            // Filter tabs to only include those with URLs starting with 'http'
-            const filteredTabs = tabs.filter(tab => tab.url.startsWith('http'));
-
-            // Check if there are any tabs to save
-            if (filteredTabs.length === 0) {
-                alert('No tabs with URLs starting with "http" found.');
-                return;
-            }
-
-            // Map the filtered tabs to get their title and URL
-            const tabsData = filteredTabs.map(tab => ({
-                title: tab.title,
-                url: tab.url
-            }));
-
-            // Retrieve saved tab groups to determine the default category name
-            chrome.storage.local.get('savedTabGroups', (data) => {
-                savedTabGroups = data.savedTabGroups || [];
-
-                // Generate default category name as 'Book X'
-                let groupNumber = savedTabGroups.length + 1;
-                let defaultCategoryName = 'Book ' + groupNumber;
-
-                // Check if this name already exists and adjust if necessary
-                while (savedTabGroups.some(group => group.category === defaultCategoryName)) {
-                    groupNumber++;
-                    defaultCategoryName = 'Book ' + groupNumber;
-                }
-                category = defaultCategoryName;
-
-                // Add the new group to the start of the array with collapsed set to false
-                savedTabGroups.unshift({
-                    category: category,
-                    tabs: tabsData,
-                    collapsed: false
-                });
-
-                // Save the updated tab groups to storage
-                chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
-                    // Update the tab groups display
-                    displayTabGroups(savedTabGroups);
-                });
-            });
-        });
     });
 
     // Event listener for the 'Settings' button
@@ -86,9 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide tabs content and show settings content
         tabsContent.style.display = 'none';
         settingsContent.style.display = 'block';
-
-        // Optionally, hide center buttons when in settings page
-        saveTabsButton.style.display = 'none';
     });
 
     // Function to load saved tab groups from storage

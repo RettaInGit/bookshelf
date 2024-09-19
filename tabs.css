@@ -62,14 +62,6 @@ input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
-#saveTabs {
-    padding: 10px 20px;
-}
-
-#saveTabs:hover {
-    background-color: #3071e8;
-}
-
 #settingsButton {
     background-color: transparent;
     border: none;
