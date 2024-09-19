@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load saved tab groups when the page loads
     loadSavedTabGroups();
 
+    // Event listener for changes in the storage and update the display
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'local' && changes.savedTabGroups) {
+            loadSavedTabGroups();
+        }
+    });
+
     // Event listener for the 'Home' link (extension name)
     homeLink.addEventListener('click', (event) => {
         event.preventDefault(); // Prevent default link behavior

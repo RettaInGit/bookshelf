@@ -5,7 +5,8 @@
   "description": "Manage and organize your open tabs.",
   "permissions": [
     "tabs",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
   "background": {
     "service_worker": "background.js"
