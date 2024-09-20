@@ -1,3 +1,23 @@
+// Function to generate a unique ID
+function generateUUID() {
+  var d = new Date().getTime();
+  var d2 = (performance && performance.now && (performance.now() * 1000)) || 0; // Time in microseconds since page-load or 0 if unsupported
+
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      let r = Math.random() * 16; // random number between 0 and 16
+
+      if (d > 0) {
+          r = (d + r) % 16 | 0;
+          d = Math.floor(d / 16);
+      } else {
+          r = (d2 + r) % 16 | 0;
+          d2 = Math.floor(d2 / 16);
+      }
+
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 // Open extension page when its icon is clicked
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: 'tabs.html' });
@@ -74,16 +94,20 @@ function saveAllTabsExceptThis(currentTab) {
 
 // Generic function to save tabs
 function saveTabs(tabs) {
+  // Check if there are any tabs to save
   if (tabs.length === 0) {
     console.log('No tabs to save');
     return;
   }
 
+  // Map the filtered tabs to get their title and URL
   const tabsData = tabs.map(tab => ({
+    id: generateUUID(),
     title: tab.title,
     url: tab.url
   }));
 
+  // Retrieve saved tab groups to determine the default category name and save it
   chrome.storage.local.get('savedTabGroups', (data) => {
     let savedTabGroups = data.savedTabGroups || [];
 
@@ -100,6 +124,7 @@ function saveTabs(tabs) {
 
     // Add the new group to the start of the array with collapsed set to false
     savedTabGroups.unshift({
+      id: generateUUID(),
       category: category,
       tabs: tabsData,
       collapsed: false
@@ -107,12 +132,14 @@ function saveTabs(tabs) {
 
     // Save the updated tab groups to storage
     chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
-      // Notify the user
       console.log(`${tabs.length} tab(s) saved under "${category}"`);
 
       // Close the saved tabs
       const tabIdsToClose = tabs.map(tab => tab.id);
       chrome.tabs.remove(tabIdsToClose);
+
+      // Send a message to tabs.html to refresh the tab groups
+      chrome.runtime.sendMessage({ action: 'tabs_saved' });
     });
   });
 }

@@ -1,25 +1,51 @@
-document.addEventListener('DOMContentLoaded', () => {
+// Function to generate a unique ID
+function generateUUID() {
+    var d = new Date().getTime();
+    var d2 = (performance && performance.now && (performance.now() * 1000)) || 0; // Time in microseconds since page-load or 0 if unsupported
+
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = Math.random() * 16; // random number between 0 and 16
+
+        if (d > 0) {
+            r = (d + r) % 16 | 0;
+            d = Math.floor(d / 16);
+        } else {
+            r = (d2 + r) % 16 | 0;
+            d2 = Math.floor(d2 / 16);
+        }
+
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+// Event listener for the DOM loaded
+document.addEventListener('DOMContentLoaded', async () => {
     const homeLink = document.getElementById('homeLink');
     const searchInput = document.getElementById('searchInput');
     const settingsButton = document.getElementById('settingsButton');
-    const tabGroupsContainer = document.getElementById('tabGroups');
     const tabsContent = document.getElementById('tabsContent');
     const settingsContent = document.getElementById('settingsContent');
     let savedTabGroups = [];
 
-    // Load saved tab groups when the page loads
-    loadSavedTabGroups();
+    // Load saved tab groups when the page loads and display it
+    await getSavedTabGroupsFromStorage();
+    displayTabGroups();
 
-    // Event listener for changes in the storage and update the display
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes.savedTabGroups) {
-            loadSavedTabGroups();
+    // Event listener for messages from background.js
+    chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+        if (message.action === 'tabs_saved') {
+            // Reload saved tab groups and refresh the display
+            await getSavedTabGroupsFromStorage();
+            displayTabGroups();
         }
     });
 
     // Event listener for the 'Home' link (extension name)
     homeLink.addEventListener('click', (event) => {
         event.preventDefault(); // Prevent default link behavior
+
+        // Show the search input
+        searchInput.style.display = 'block';
 
         // Show tabs content and hide settings content
         tabsContent.style.display = 'block';
@@ -28,42 +54,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for the search bar
     searchInput.addEventListener('input', () => {
-        loadSavedTabGroups();
+        displayTabGroups();
     });
 
     // Event listener for the 'Settings' button
     settingsButton.addEventListener('click', () => {
+
+        // Hide the search input
+        searchInput.style.display = 'none';
+
         // Hide tabs content and show settings content
         tabsContent.style.display = 'none';
         settingsContent.style.display = 'block';
     });
 
-    // Function to load saved tab groups from storage
-    function loadSavedTabGroups() {
-        chrome.storage.local.get('savedTabGroups', (data) => {
-            savedTabGroups = data.savedTabGroups || [];
-            displayTabGroups(savedTabGroups);
-        });
+    // Function to get saved tabs from storage
+    async function getSavedTabGroupsFromStorage() {
+        const data = await chrome.storage.local.get('savedTabGroups');
+        savedTabGroups = data.savedTabGroups || [];
+    }
+
+    // Function to set saved tabs to storage
+    async function setSavedTabGroupsToStorage() {
+        await chrome.storage.local.set({ 'savedTabGroups': savedTabGroups });
     }
 
     // Function to display tab groups on the page
-    function displayTabGroups(tabGroups) {
+    function displayTabGroups() {
         const fragment = document.createDocumentFragment();  // Create fragment to minimizes the number of reflows and repaints
-
         const currentSearchQuery = searchInput.value.trim().toLowerCase();  // Get current filtering query
-        let anyGroupsVisible = false;
 
-        tabGroups.forEach((group, groupIndex) => {
+        savedTabGroups.forEach((group) => {
             let anyTabVisible = false;
+            const groupId = group.id;
 
             // Create a container for each group
             const groupContainer = document.createElement('div');
             groupContainer.className = 'tabGroup';
-
-            // Ensure group.collapsed is defined
-            if (group.collapsed === undefined) {
-                group.collapsed = false; // default to expanded
-            }
+            groupContainer.dataset.groupId = groupId;
 
             // Create a header container for the group
             const groupHeaderContainer = document.createElement('div');
@@ -73,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             groupHeaderContainer.addEventListener('click', (event) => {
                 // Check if the clicked element is the header container or the group title
                 if ((event.target === groupHeaderContainer) || ((event.target === groupTitle) && (editGroupButton.dataset.mode === 'edit'))) {
-                    toggleGroupCollapse(groupIndex);
+                    toggleGroupCollapse(groupId);
                 }
             });
 
@@ -85,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add an event listener to the master checkbox
             masterCheckbox.addEventListener('change', (event) => {
-                toggleGroupCheckboxes(groupIndex, event.target.checked);
+                toggleGroupCheckboxes(groupId, event.target.checked);
             });
 
             // Create a title for the group
@@ -101,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editGroupButton.className = 'editGroupButton';
             editGroupButton.dataset.mode = 'edit';
             editGroupButton.addEventListener('click', () => {
-                toggleEditGroupTitle(groupIndex);
+                toggleEditGroupTitle(groupId);
             });
 
             // Create a restore button for the group
@@ -110,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restoreGroupButton.title = 'Restore this group';
             restoreGroupButton.className = 'restoreGroupButton';
             restoreGroupButton.addEventListener('click', () => {
-                restoreTabGroup(group);
+                restoreTabGroup(groupId);
             });
 
             // Create a remove button for the group
@@ -119,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             removeGroupButton.title = 'Remove this group';
             removeGroupButton.className = 'removeGroupButton';
             removeGroupButton.addEventListener('click', () => {
-                removeTabGroup(groupIndex);
+                removeTabGroup(groupId);
             });
 
             // Append elements to the header container in the desired order
@@ -134,37 +162,44 @@ document.addEventListener('DOMContentLoaded', () => {
             tabList.className = 'tabList';
             tabList.style.display = group.collapsed ? 'none' : 'block';
 
-            group.tabs.forEach((tab, tabIndex) => {
+            group.tabs.forEach((tab) => {
+                const tabId = tab.id;
+
+                // Create a list item for each tab
                 const listItem = document.createElement('li');
+                listItem.dataset.tabId = tabId;
 
                 // Create a checkbox for selection
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'tabCheckbox';
-                checkbox.dataset.tabIndex = tabIndex;
-                checkbox.dataset.groupIndex = groupIndex;
 
                 // Add event listener to update master checkbox when individual checkbox changes
                 checkbox.addEventListener('change', () => {
-                    updateMasterCheckboxState(groupIndex);
+                    updateMasterCheckboxState(groupId);
                 });
 
+                // Create a link to store tab informations
                 const link = document.createElement('a');
                 link.href = tab.url;
                 link.textContent = tab.title;
                 link.target = '_blank';
 
+                // Create a remove button for the tab
                 const removeTabButton = document.createElement('button');
                 removeTabButton.textContent = 'X';
                 removeTabButton.title = 'Remove this tab';
                 removeTabButton.className = 'removeTabButton';
                 removeTabButton.addEventListener('click', () => {
-                    removeTabFromGroup(groupIndex, tabIndex);
+                    removeTabFromGroup(groupId, tabId);
                 });
 
+                // Append elements to the list item in the desired order
                 listItem.appendChild(checkbox);
                 listItem.appendChild(link);
                 listItem.appendChild(removeTabButton);
+
+                // Append element to the tab list
                 tabList.appendChild(listItem);
 
                 // Show or hide the tab based on whether the query is included in the title
@@ -186,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             removeSelectedButton.textContent = 'Remove Selected Tabs';
             removeSelectedButton.className = 'removeSelectedButton';
             removeSelectedButton.addEventListener('click', () => {
-                removeSelectedTabs(groupIndex);
+                removeSelectedTabs(groupId);
             });
 
             // Append the removeSelectedButton to the footer container
@@ -199,8 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Show or hide the group based on whether any tabs are visible
             if (anyTabVisible) {
-                groupContainer.style.display = '';
-                anyGroupsVisible = true;
+                groupContainer.style.display = 'block';
             } else {
                 groupContainer.style.display = 'none';
             }
@@ -210,30 +244,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Clear existing content and append the fragment
+        const tabGroupsContainer = document.getElementById('tabGroups');
         tabGroupsContainer.innerHTML = '';
         tabGroupsContainer.appendChild(fragment);
 
         // Display a message if no tabs match
-        if ((tabGroups.length === 0) || (!anyGroupsVisible)) {
-            if (!document.getElementById('noResultsMessage')) {
-                const noResultsMessage = document.createElement('p');
-                noResultsMessage.id = 'noResultsMessage';
-                noResultsMessage.textContent = tabGroups.length === 0 ? 'No tabs saved. Try adding some.' : 'No tabs match your search.';
-                noResultsMessage.style.textAlign = 'center';
-                noResultsMessage.style.marginTop = '20px';
-                tabGroupsContainer.parentElement.appendChild(noResultsMessage);
-            }
-        } else {
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            if (noResultsMessage) {
-                noResultsMessage.remove();
-            }
-        }
+        displayResultMessage();
     }
 
     // Function to toggle group collapse/expand state
-    function toggleGroupCollapse(groupIndex) {
-        const groupContainer = tabGroupsContainer.children[groupIndex];
+    function toggleGroupCollapse(groupId) {
+        // Find the group index
+        const groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
+
+        // Get HTML elements
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
         const tabList = groupContainer.querySelector('.tabList');
         const groupFooterContainer = groupContainer.querySelector('.groupFooterContainer');
 
@@ -241,20 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedTabGroups[groupIndex].collapsed) {
             tabList.style.display = 'block';
             groupFooterContainer.style.display = 'flex';
-            savedTabGroups[groupIndex].collapsed = false;
         } else {
             tabList.style.display = 'none';
             groupFooterContainer.style.display = 'none';
-            savedTabGroups[groupIndex].collapsed = true;
         }
+        savedTabGroups[groupIndex].collapsed ^= true;  // toggle value
 
-        // Save the updated savedTabGroups to chrome.storage.local
-        chrome.storage.local.set({ 'savedTabGroups': savedTabGroups });
+        // Save the updated savedTabGroups
+        setSavedTabGroupsToStorage();
     }
 
     // Function to toggle all checkboxes in a group
-    function toggleGroupCheckboxes(groupIndex, isChecked) {
-        const groupContainer = tabGroupsContainer.children[groupIndex];
+    function toggleGroupCheckboxes(groupId, isChecked) {
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
         const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
 
         checkboxes.forEach((checkbox) => {
@@ -263,8 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to update the master checkbox state based on individual checkboxes
-    function updateMasterCheckboxState(groupIndex) {
-        const groupContainer = tabGroupsContainer.children[groupIndex];
+    function updateMasterCheckboxState(groupId) {
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
         const masterCheckbox = groupContainer.querySelector('.masterCheckbox');
         const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
 
@@ -276,9 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to toggle between edit and save modes for the group title
-    function toggleEditGroupTitle(groupIndex) {
-        const groupContainer = tabGroupsContainer.children[groupIndex];
-        const groupHeaderContainer = groupContainer.querySelector('.groupHeaderContainer');
+    function toggleEditGroupTitle(groupId) {
+        // Find the group index
+        const groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
+
+        // Get HTML elements
+        const groupHeaderContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"] .groupHeaderContainer`);
         const groupTitle = groupHeaderContainer.querySelector('.groupTitle');
         const editGroupButton = groupHeaderContainer.querySelector('.editGroupButton');
 
@@ -307,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             groupTitle.onkeypress = function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault(); // Prevent newline
-                    toggleEditGroupTitle(groupIndex); // Save on Enter key
+                    toggleEditGroupTitle(groupId); // Save on Enter key
                 }
             };
         } else {
@@ -320,108 +349,157 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Retrieve the saved groups
-            chrome.storage.local.get('savedTabGroups', (data) => {
-                const savedTabGroups = data.savedTabGroups || [];
-                const group = savedTabGroups[groupIndex];
+            // Check if a group with the new title already exists
+            if (savedTabGroups.some(g => (g.category === newTitle) && (g.id !== groupId))) {
+                alert('A group with this title already exists. Please choose a different title.');
+                groupTitle.focus();
+                return;
+            }
 
-                // Check if a group with the new title already exists
-                const existingGroupIndex = savedTabGroups.findIndex(g => g.category === newTitle);
-                if (existingGroupIndex !== -1 && existingGroupIndex !== groupIndex) {
-                    alert('A group with this title already exists. Please choose a different title.');
-                    groupTitle.focus();
-                    return;
-                }
+            // Update the group title
+            savedTabGroups[groupIndex].category = newTitle;
 
-                // Update the group title
-                group.category = newTitle;
+            // Save the updated tab groups to storage
+            setSavedTabGroupsToStorage();
 
-                // Save the updated tab groups to storage
-                chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
-                    // Disable contentEditable
-                    groupTitle.contentEditable = false;
+            // Disable contentEditable
+            groupTitle.contentEditable = false;
 
-                    // Reset the edit button
-                    editGroupButton.textContent = 'Edit';
-                    editGroupButton.title = 'Edit group title';
-                    editGroupButton.dataset.mode = 'edit';
+            // Reset the edit button
+            editGroupButton.textContent = 'Edit';
+            editGroupButton.title = 'Edit group title';
+            editGroupButton.dataset.mode = 'edit';
 
-                    // Remove keypress handler
-                    groupTitle.onkeypress = null;
-                });
-            });
+            // Remove keypress handler
+            groupTitle.onkeypress = null;
         }
     }
 
     // Function to remove selected tabs from a group
-    function removeSelectedTabs(groupIndex) {
-        chrome.storage.local.get('savedTabGroups', (data) => {
-            const tabGroups = data.savedTabGroups || [];
-            const group = tabGroups[groupIndex];
+    function removeSelectedTabs(groupId) {
+        // Find the group index
+        const groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
 
-            // Get all checkboxes in this group's tab list
-            const groupContainer = tabGroupsContainer.children[groupIndex];
-            const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+        // Get HTML elements
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
+        const tabList = groupContainer.querySelector('.tabList');
+        const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
 
-            // Collect the indices of tabs to remove
-            const indicesToRemove = [];
-            checkboxes.forEach((checkbox) => {
-                if (checkbox.checked) {
-                    indicesToRemove.push(parseInt(checkbox.dataset.tabIndex));
-                }
-            });
-
-            if (indicesToRemove.length === 0) {
-                alert('Please select at least one tab to remove.');
-                return;
+        // Collect the indices of tabs to remove
+        const indicesToRemove = [];
+        checkboxes.forEach((checkbox, checkboxIndex) => {
+            if (checkbox.checked) {
+                indicesToRemove.push(checkboxIndex);
             }
-
-            // Confirm to remove the tabs
-            if (!confirm('Are you sure you want to remove the selected tabs?')) {
-                return;
-            }
-
-            // Remove tabs starting from the highest index to avoid index shifting
-            indicesToRemove.sort((a, b) => b - a).forEach((tabIndex) => {
-                group.tabs.splice(tabIndex, 1);
-            });
-
-            // Remove the group if no tabs are left
-            if (group.tabs.length === 0) {
-                tabGroups.splice(groupIndex, 1);
-            }
-
-            // Save the updated tab groups to storage
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
         });
+
+        if (indicesToRemove.length === 0) {
+            alert('Please select at least one tab to remove.');
+            return;
+        }
+
+        // Confirm to remove the tabs
+        if (!confirm('Are you sure you want to remove the selected tabs?')) {
+            return;
+        }
+
+        // Remove tabs starting from the highest index to avoid index shifting
+        indicesToRemove.sort((a, b) => b - a).forEach((tabIndex) => {
+            tabList.removeChild(tabList.children[tabIndex]);
+            savedTabGroups[groupIndex].tabs.splice(tabIndex, 1);
+        });
+
+        // Remove the group if no tabs are left
+        if (savedTabGroups[groupIndex].tabs.length === 0) {
+            groupContainer.parentElement.removeChild(groupContainer);
+            savedTabGroups.splice(groupIndex, 1);
+        }
+
+        // Save the updated savedTabGroups
+        setSavedTabGroupsToStorage();
     }
 
     // Function to remove an entire tab group
-    function removeTabGroup(groupIndex) {
-        chrome.storage.local.get('savedTabGroups', (data) => {
-            const tabGroups = data.savedTabGroups || [];
-            tabGroups.splice(groupIndex, 1);
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
-        });
+    function removeTabGroup(groupId) {
+        // Find the group index
+        const groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
+
+        // Get HTML element
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
+
+        // Remove the group
+        groupContainer.parentElement.removeChild(groupContainer);
+        savedTabGroups.splice(groupIndex, 1);
+
+        // Display a message if there are no tabs
+        displayResultMessage();
+
+        // Save the updated savedTabGroups
+        setSavedTabGroupsToStorage();
     }
 
     // Function to remove a tab from a group
-    function removeTabFromGroup(groupIndex, tabIndex) {
-        chrome.storage.local.get('savedTabGroups', (data) => {
-            const tabGroups = data.savedTabGroups || [];
-            tabGroups[groupIndex].tabs.splice(tabIndex, 1);
-            // Remove the group if no tabs are left
-            if (tabGroups[groupIndex].tabs.length === 0) {
-                tabGroups.splice(groupIndex, 1);
-            }
-            chrome.storage.local.set({ 'savedTabGroups': tabGroups });
-        });
+    function removeTabFromGroup(groupId, tabId) {
+        // Find the group index
+        const groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
+
+        // Find the tab index
+        const tabIndex = savedTabGroups[groupIndex].tabs.findIndex(t => t.id === tabId);
+        if (tabIndex === -1) return;
+
+        // Get HTML element
+        const tabList = document.querySelector(`.tabGroup[data-group-id="${groupId}"] .tabList`);
+
+        // Remove tab
+        tabList.removeChild(tabList.children[tabIndex]);
+        savedTabGroups[groupIndex].tabs.splice(tabIndex, 1);
+
+        // Remove the group if no tabs are left
+        if (savedTabGroups[groupIndex].tabs.length === 0) {
+            removeTabGroup(groupId);
+            return;
+        }
+
+        // Save the updated savedTabGroups
+        setSavedTabGroupsToStorage();
     }
 
     // Function to restore tabs from a single group
-    function restoreTabGroup(group) {
+    function restoreTabGroup(groupId) {
+        // Find the group by ID
+        const group = savedTabGroups.find(g => g.id === groupId);
+        if (!group) return;
+
+        // Restore tabs
         group.tabs.forEach(tab => {
             chrome.tabs.create({ url: tab.url });
         });
+    }
+
+    // Display a message if there are no tabs visible in the page
+    function displayResultMessage() {
+        // Get HTML elements
+        const resultMessage = document.querySelector('#resultMessage');
+        const groupContainer = document.querySelectorAll('.tabGroup');
+
+        // Check if any group is visible
+        let anyGroupsVisible = Object.values(groupContainer).some(group => group.style.display === 'block');
+
+        // Display message
+        if(savedTabGroups.length === 0) {
+            resultMessage.style.display = 'block';
+            resultMessage.textContent = 'No tabs saved. Try adding some.';
+        }
+        else if(!anyGroupsVisible) {
+            resultMessage.style.display = 'block';
+            resultMessage.textContent = 'No tabs match your search.';
+        }
+        else {
+            resultMessage.style.display = 'none';
+            resultMessage.textContent = '';
+        }
     }
 });
