@@ -34,6 +34,12 @@ chrome.runtime.onInstalled.addListener(() => {
     title: 'Save all tabs except this',
     contexts: ['action']
   });
+
+  chrome.contextMenus.create({
+    id: 'saveOnlyThisTab',
+    title: 'Save only this tab',
+    contexts: ['action']
+  });
 });
 
 // Listen for clicks on context menu items
@@ -46,6 +52,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     saveAllTabs(tab);
   } else if (info.menuItemId === 'saveAllTabsExceptThis') {
     saveAllTabsExceptThis(tab);
+  } else if (info.menuItemId === 'saveOnlyThisTab') {
+    saveOnlyThisTab(tab);
   }
 });
 
@@ -75,6 +83,13 @@ function saveAllTabsExceptThis(currentTab) {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
     saveTabs(tabs.filter(tab => (tab.id !== currentTab.id) && tab.url.startsWith('http')));
   });
+}
+
+// Function to save only the current tab
+function saveOnlyThisTab(currentTab) {
+  if(currentTab.url.startsWith('http')) {
+    saveTabs([currentTab]);
+  }
 }
 
 // Generic function to save tabs
