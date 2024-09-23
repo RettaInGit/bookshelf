@@ -29,11 +29,16 @@ input[type="checkbox"] {
 }
 
 #pageHeader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: #f1f1f1;
-    padding: 15px 20px;
+    padding: 15px 40px;
     border-bottom: 1px solid #ddd;
 }
 
@@ -106,7 +111,7 @@ input[type="checkbox"] {
 
 #mainContent {
     max-width: 1000px;
-    margin: 20px auto;
+    margin: 90px auto 20px;
     padding: 20px;
 }
 
