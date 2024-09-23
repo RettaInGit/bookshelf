@@ -196,6 +196,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             groupFooterContainer.className = 'groupFooterContainer';
             groupFooterContainer.style.display = group.collapsed ? 'none' : 'flex';
 
+            // Add a button to restore selected tabs
+            const restoreSelectedButton = document.createElement('button');
+            restoreSelectedButton.textContent = 'Restore Selected Tabs';
+            restoreSelectedButton.className = 'restoreSelectedButton';
+            restoreSelectedButton.addEventListener('click', () => {
+                restoreSelectedTabs(groupId);
+            });
+
             // Add a button to remove selected tabs
             const removeSelectedButton = document.createElement('button');
             removeSelectedButton.textContent = 'Remove Selected Tabs';
@@ -205,6 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // Append the removeSelectedButton to the footer container
+            groupFooterContainer.appendChild(restoreSelectedButton);
             groupFooterContainer.appendChild(removeSelectedButton);
 
             // Append elements to the group container
@@ -353,6 +362,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Remove keypress handler
             groupTitle.onkeypress = null;
         }
+    }
+
+    // Function to restore selected tabs from a group
+    function restoreSelectedTabs(groupId) {
+        // Find the group by ID
+        const group = savedTabGroups.find(g => g.id === groupId);
+        if (!group) return;
+
+        // Get HTML elements
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
+        const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+
+        // Collect the tabs to restore
+        const tabsToRestore = [];
+        checkboxes.forEach((checkbox, checkboxIndex) => {
+            if (checkbox.checked) {
+                tabsToRestore.push(group.tabs[checkboxIndex]);
+            }
+        });
+
+        if (tabsToRestore.length === 0) {
+            alert('Please select at least one tab to restore.');
+            return;
+        }
+
+        // Confirm restoration
+        if (!confirm(`Are you sure you want to restore ${tabsToRestore.length} selected tab(s)?`)) {
+            return;
+        }
+
+        // Restore the selected tabs by creating new tabs in the browser
+        tabsToRestore.forEach(tab => {
+            chrome.tabs.create({ url: tab.url });
+        });
     }
 
     // Function to remove selected tabs from a group

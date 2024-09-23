@@ -170,7 +170,7 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
-.groupHeaderContainer .masterCheckbox, .groupFooterContainer .removeSelectedButton {
+.groupHeaderContainer .masterCheckbox {
     margin-right: 10px;
 }
 
@@ -197,10 +197,10 @@ input[type="checkbox"] {
     background-color: #c9302c;
 }
 
-.groupHeaderContainer .restoreGroupButton {
+.groupHeaderContainer .restoreGroupButton, .groupFooterContainer .restoreSelectedButton {
     background-color: #34A853;
 }
 
-.groupHeaderContainer .restoreGroupButton:hover {
+.groupHeaderContainer .restoreGroupButton:hover, .groupFooterContainer .restoreSelectedButton:hover {
     background-color: #2c8c47;
 }
