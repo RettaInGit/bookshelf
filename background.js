@@ -115,24 +115,25 @@ function saveTabs(tabs) {
     let groupNumber = savedTabGroups.length + 1;
     let defaultCategoryName = 'Book ' + groupNumber;
 
-    // Ensure the category name is unique
+    // Ensure the category name is unique (deprecated)
+    /*
     while (savedTabGroups.some(group => group.category === defaultCategoryName)) {
       groupNumber++;
       defaultCategoryName = 'Book ' + groupNumber;
     }
-    let category = defaultCategoryName;
+    */
 
-    // Add the new group to the start of the array with collapsed set to false
+    // Add the new group to the start of the array
     savedTabGroups.unshift({
       id: generateUUID(),
-      category: category,
+      category: defaultCategoryName,
       tabs: tabsData,
       collapsed: false
     });
 
     // Save the updated tab groups to storage
     chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
-      console.log(`${tabs.length} tab(s) saved under "${category}"`);
+      console.log(`${tabs.length} tab(s) saved under "${defaultCategoryName}"`);
 
       // Close the saved tabs
       const tabIdsToClose = tabs.map(tab => tab.id);
