@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Show or hide the tab based on whether the query is included in the title
                 if (tab.title.toLowerCase().includes(currentSearchQuery)) {
-                    listItem.style.display = '';
+                    listItem.style.display = 'flex';
                     anyTabVisible = true;
                 } else {
                     listItem.style.display = 'none';
