@@ -60,34 +60,34 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Function to save tabs on the left
 function saveTabsOnLeft(currentTab) {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    saveTabs(tabs.filter(tab => (tab.index < currentTab.index) && tab.url.startsWith('http')));
+    saveTabs(tabs.filter(tab => (tab.index < currentTab.index) && (!tab.pinned) && tab.url.startsWith('http')));
   });
 }
 
 // Function to save tabs on the right
 function saveTabsOnRight(currentTab) {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    saveTabs(tabs.filter(tab => (tab.index > currentTab.index) && tab.url.startsWith('http')));
+    saveTabs(tabs.filter(tab => (tab.index > currentTab.index) && (!tab.pinned) && tab.url.startsWith('http')));
   });
 }
 
 // Function to save all tabs
 function saveAllTabs(currentTab) {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    saveTabs(tabs.filter(tab => tab.url.startsWith('http')));
+    saveTabs(tabs.filter(tab => (!tab.pinned) && tab.url.startsWith('http')));
   });
 }
 
 // Function to save all tabs except current
 function saveAllTabsExceptThis(currentTab) {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    saveTabs(tabs.filter(tab => (tab.id !== currentTab.id) && tab.url.startsWith('http')));
+    saveTabs(tabs.filter(tab => (tab.id !== currentTab.id) && (!tab.pinned) && tab.url.startsWith('http')));
   });
 }
 
 // Function to save only the current tab
 function saveOnlyThisTab(currentTab) {
-  if(currentTab.url.startsWith('http')) {
+  if((!currentTab.pinned) && currentTab.url.startsWith('http')) {
     saveTabs([currentTab]);
   }
 }
