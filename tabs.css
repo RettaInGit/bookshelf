@@ -174,7 +174,7 @@ input[type="checkbox"] {
     margin-right: 10px;
 }
 
-.groupHeaderContainer .groupTitle {
+.groupHeaderContainer .groupTitle, .groupFooterContainer .tabsCount {
     flex-grow: 1;
     margin: 0;
     padding: 0;
@@ -183,6 +183,12 @@ input[type="checkbox"] {
 .groupHeaderContainer .groupTitle[contenteditable="true"] {
     outline: 2px solid #4285F4;
     background-color: #fff;
+}
+
+.groupFooterContainer .tabsCount {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 5px;
 }
 
 .groupHeaderContainer .editGroupButton:hover {

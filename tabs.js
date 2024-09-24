@@ -212,9 +212,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 removeSelectedTabs(groupId);
             });
 
+            // Create a span to display the number of tabs
+            const tabsCountSpan = document.createElement('h2');
+            tabsCountSpan.textContent = `${group.tabs.length} Page${group.tabs.length !== 1 ? 's' : ''}`;
+            tabsCountSpan.className = 'tabsCount';
+
             // Append the removeSelectedButton to the footer container
             groupFooterContainer.appendChild(restoreSelectedButton);
             groupFooterContainer.appendChild(removeSelectedButton);
+            groupFooterContainer.appendChild(tabsCountSpan);
 
             // Append elements to the group container
             groupContainer.appendChild(groupHeaderContainer);
@@ -435,12 +441,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Remove the group if no tabs are left
         if (savedTabGroups[groupIndex].tabs.length === 0) {
-            groupContainer.parentElement.removeChild(groupContainer);
-            savedTabGroups.splice(groupIndex, 1);
+            removeTabGroup(groupId);
+            return;
         }
+
+        // Update tabs count
+        updateTabCount(groupId);
 
         // Save the updated savedTabGroups
         setSavedTabGroupsToStorage();
+    }
+
+    // Function to update tabs count
+    function updateTabCount(groupId) {
+        // Get group
+        const group = savedTabGroups.find(g => g.id === groupId);
+        if (!group) return;
+
+        // Get HTML elements
+        const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
+        if (!groupContainer) return;
+
+        const tabsCountSpan = groupContainer.querySelector('.tabsCount');
+        if (!tabsCountSpan) return;
+
+        // Change text
+        tabsCountSpan.textContent = `${group.tabs.length} Page${group.tabs.length !== 1 ? 's' : ''}`;
     }
 
     // Function to remove an entire tab group
@@ -485,6 +511,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             removeTabGroup(groupId);
             return;
         }
+
+        // Update tabs count
+        updateTabCount(groupId);
 
         // Save the updated savedTabGroups
         setSavedTabGroupsToStorage();
