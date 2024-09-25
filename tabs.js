@@ -1,3 +1,8 @@
+// Function to generate a unique ID
+function generateUUID() {
+    return crypto.randomUUID();
+}
+
 // Event listener for the DOM loaded
 document.addEventListener('DOMContentLoaded', async () => {
     const homeLink = document.getElementById('homeLink');
@@ -6,6 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabsContent = document.getElementById('tabsContent');
     const settingsContent = document.getElementById('settingsContent');
     let savedTabGroups = [];
+    let tabsToMove = [];
+    let groupIdOfMovingTabs = '';
 
     // Load saved tab groups when the page loads and display it
     await getSavedTabGroupsFromStorage();
@@ -14,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event listener for messages from background.js
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         if (message.action === 'tabs_saved') {
-            // Reload saved tab groups and refresh the display
+            // Reload saved tab groups and repaint the DOM
             await getSavedTabGroupsFromStorage();
             displayTabGroups();
         }
@@ -34,6 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listener for the search bar
     searchInput.addEventListener('input', () => {
+        // TODO: disable or enable (by settings) to move tabs when filtering
+        //    if(!settings.canMoveWhileFiltering) {
+        //        tabsToMove = [];
+        //        groupIdOfMovingTabs = '';
+        //    }
+
+        // Repaint the DOM
         displayTabGroups();
     });
 
@@ -63,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function displayTabGroups() {
         const fragment = document.createDocumentFragment();  // Create fragment to minimizes the number of reflows and repaints
         const currentSearchQuery = searchInput.value.trim().toLowerCase();  // Get current filtering query
+        const areThereAnyTabsToMove = (tabsToMove.length !== 0) && (savedTabGroups.findIndex(g => g.id === groupIdOfMovingTabs) !== -1);
 
         savedTabGroups.forEach((group) => {
             let anyTabVisible = false;
@@ -149,12 +164,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const listItem = document.createElement('li');
                 listItem.dataset.tabId = tabId;
 
+                // Create "Move here" button
+                const moveHereButton = document.createElement('button');
+                moveHereButton.textContent = 'Move here';  // Using a star symbol for simplicity
+                moveHereButton.className = 'moveHereButton';
+                moveHereButton.style.display =  areThereAnyTabsToMove && (groupIdOfMovingTabs != groupId) ? 'block' : 'none';
+                moveHereButton.addEventListener('click', () => {
+                    moveTabsHere(groupId, tabId);
+                });
+
+                // Create a container for the tab info and controls
+                const tabContainer = document.createElement('div');
+                tabContainer.className = 'tabContainer';
+
                 // Create a checkbox for selection
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'tabCheckbox';
-
-                // Add event listener to update master checkbox when individual checkbox changes
                 checkbox.addEventListener('change', () => {
                     updateMasterCheckboxState(groupId);
                 });
@@ -174,10 +200,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     removeTabFromGroup(groupId, tabId);
                 });
 
+                // Append elements to the tab container in the desired order
+                tabContainer.appendChild(checkbox);
+                tabContainer.appendChild(link);
+                tabContainer.appendChild(removeTabButton);
+
                 // Append elements to the list item in the desired order
-                listItem.appendChild(checkbox);
-                listItem.appendChild(link);
-                listItem.appendChild(removeTabButton);
+                listItem.appendChild(moveHereButton);
+                listItem.appendChild(tabContainer);
 
                 // Append element to the tab list
                 tabList.appendChild(listItem);
@@ -191,10 +221,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
+            // Create "Move here" button
+            const moveHereButton = document.createElement('button');
+            moveHereButton.textContent = 'Move here';  // Using a star symbol for simplicity
+            moveHereButton.className = 'moveHereButton';
+            moveHereButton.style.display =  areThereAnyTabsToMove && (groupIdOfMovingTabs != groupId) ? 'block' : 'none';
+            moveHereButton.addEventListener('click', () => {
+                moveTabsHere(groupId, '');
+            });
+
             // Create a footer container for the group
             const groupFooterContainer = document.createElement('div');
             groupFooterContainer.className = 'groupFooterContainer';
             groupFooterContainer.style.display = group.collapsed ? 'none' : 'flex';
+
+            // Add a button to move selected tabs
+            const moveSelectedButton = document.createElement('button');
+            moveSelectedButton.textContent = 'Move Selected Tabs';
+            moveSelectedButton.className = 'moveSelectedButton'; // Add class for styling
+            moveSelectedButton.disabled = areThereAnyTabsToMove && (groupIdOfMovingTabs != groupId);
+            moveSelectedButton.style.textDecoration = moveSelectedButton.disabled ? 'line-through' : 'none';
+            moveSelectedButton.addEventListener('click', () => {
+                moveSelectedTabs(groupId);
+            });
 
             // Add a button to restore selected tabs
             const restoreSelectedButton = document.createElement('button');
@@ -218,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabsCountSpan.className = 'tabsCount';
 
             // Append the removeSelectedButton to the footer container
+            groupFooterContainer.appendChild(moveSelectedButton);
             groupFooterContainer.appendChild(restoreSelectedButton);
             groupFooterContainer.appendChild(removeSelectedButton);
             groupFooterContainer.appendChild(tabsCountSpan);
@@ -225,6 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Append elements to the group container
             groupContainer.appendChild(groupHeaderContainer);
             groupContainer.appendChild(tabList);
+            groupContainer.appendChild(moveHereButton);
             groupContainer.appendChild(groupFooterContainer);
 
             // Show or hide the group based on whether any tabs are visible
@@ -367,6 +418,78 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Remove keypress handler
             groupTitle.onkeypress = null;
+        }
+    }
+
+    // Function to move selected tabs
+    function moveSelectedTabs(groupId) {
+        // Enable to move tabs
+        if (tabsToMove.length === 0) {
+            // Find the group by ID
+            const group = savedTabGroups.find(g => g.id === groupId);
+            if (!group) return;
+
+            // Get HTML elements
+            const groupContainer = document.querySelector(`.tabGroup[data-group-id="${groupId}"]`);
+            const checkboxes = groupContainer.querySelectorAll('.tabCheckbox');
+
+            // Collect the tabs to move
+            tabsToMove = [];
+            checkboxes.forEach((checkbox, checkboxIndex) => {
+                if (checkbox.checked) {
+                    tabsToMove.push(group.tabs[checkboxIndex]);
+                }
+            });
+
+            if (tabsToMove.length === 0) {
+                alert('Please select at least one tab to move.');
+                return;
+            }
+
+            // Saves the group ID of the group where the tabs to be moved were taken
+            groupIdOfMovingTabs = groupId;
+
+            // Disable all the others moving buttons
+            document.querySelectorAll('.moveSelectedButton').forEach(moveSelectedButton => {
+                if (moveSelectedButton.parentElement.parentElement.dataset.groupId != groupId) {
+                    moveSelectedButton.disabled = true;
+                    moveSelectedButton.style.textDecoration = 'line-through';
+                }
+            });
+
+            // Remove bottom border from all the tabs
+            document.querySelectorAll('.tabList li').forEach(listItem => {
+                listItem.style.borderBottomWidth = '0px';
+            });
+
+            // Show all "Move here" buttons
+            document.querySelectorAll('.moveHereButton').forEach(moveHereButton => {
+                moveHereButton.style.display = 'block';
+            });
+        }
+        // Disable to move tabs
+        else {
+            // Clear the array and the group ID
+            tabsToMove = [];
+            groupIdOfMovingTabs = '';
+
+            // Enable all the others buttons
+            document.querySelectorAll('.moveSelectedButton').forEach(moveSelectedButton => {
+                if (moveSelectedButton.parentElement.parentElement.dataset.groupId != groupId) {
+                    moveSelectedButton.disabled = false;
+                    moveSelectedButton.style.textDecoration = 'none';
+                }
+            });
+
+            // Add bottom border in all the tabs
+            document.querySelectorAll('.tabList li').forEach(listItem => {
+                listItem.style.borderBottomWidth = '1px';
+            });
+
+            // Hide all "Move here" buttons
+            document.querySelectorAll('.moveHereButton').forEach(moveHereButton => {
+                moveHereButton.style.display = 'none';
+            });
         }
     }
 
@@ -519,6 +642,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         setSavedTabGroupsToStorage();
     }
 
+    // Function to move tabs inside a group
+    function moveTabsHere(groupId, tabId) {
+        if ((tabsToMove.length === 0) || (savedTabGroups.findIndex(g => g.id === groupIdOfMovingTabs) === -1)) return;
+
+        // Find the group index
+        let groupIndex = savedTabGroups.findIndex(g => g.id === groupId);
+        if (groupIndex === -1) return;
+
+        // Find the tab index
+        let tabIndex = savedTabGroups[groupIndex].tabs.findIndex(t => t.id === tabId);
+        if (tabIndex < 0) tabIndex = savedTabGroups[groupIndex].tabs.length;
+
+        // Check if the tabs we are moving have the same ID as those in the group
+        let groupIds = new Set();
+        let tabToAdd = JSON.parse(JSON.stringify(tabsToMove));  // Make a deep copy
+        do {
+            // Get group tabs IDs
+            groupIds = new Set(savedTabGroups[groupIndex].tabs.map(tab => tab.id));
+
+            // Check for duplicated IDs
+            tabToAdd.forEach(tab => {
+                if (groupIds.has(tab.id)) {
+                    tab.id = generateUUID();  // generate new ID
+                }
+            });
+        } while(tabToAdd.some(tab => groupIds.has(tab.id)));
+
+        // Add tabs
+        savedTabGroups[groupIndex].tabs.splice(tabIndex, 0, ...tabToAdd);
+
+        // Remove tabs from previous group
+        groupIndex = savedTabGroups.findIndex(g => g.id === groupIdOfMovingTabs);
+        groupIds = new Set(tabsToMove.map(tab => tab.id));
+        savedTabGroups[groupIndex].tabs = savedTabGroups[groupIndex].tabs.filter(tab => !groupIds.has(tab.id));
+
+        // Clear the array and the group ID
+        tabsToMove = [];
+        groupIdOfMovingTabs = '';
+
+        // Save the updated savedTabGroups
+        setSavedTabGroupsToStorage();
+
+        // Repaint the DOM (TODO: remove this and make it repaint dynamically when adding and removing moved tabs)
+        displayTabGroups();
+    }
+
     // Function to restore tabs from a single group
     function restoreTabGroup(groupId) {
         // Find the group by ID
@@ -541,11 +710,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         let anyGroupsVisible = Object.values(groupContainer).some(group => group.style.display === 'block');
 
         // Display message
-        if(savedTabGroups.length === 0) {
+        if (savedTabGroups.length === 0) {
             resultMessage.style.display = 'block';
             resultMessage.textContent = 'No tabs saved. Try adding some.';
         }
-        else if(!anyGroupsVisible) {
+        else if (!anyGroupsVisible) {
             resultMessage.style.display = 'block';
             resultMessage.textContent = 'No tabs match your search.';
         }

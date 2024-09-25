@@ -120,15 +120,14 @@ input[type="checkbox"] {
 }
 
 .tabList {
+    display: grid;
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
 .tabList li {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
+    display: grid !important;
     background-color: #FFFFFF;
     border-bottom: 1px solid #E0E0E0;
 }
@@ -137,15 +136,32 @@ input[type="checkbox"] {
     border-bottom: none;
 }
 
-.tabList a {
+.tabList li .tabContainer {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+.tabList li .tabContainer a {
     text-decoration: none;
     color: #1A0DAB;
     font-size: 14px;
     flex-grow: 1;
 }
 
-.tabList a:hover {
+.tabList li .tabContainer a:hover {
     text-decoration: underline;
+}
+
+.tabList li .moveHereButton, .tabGroup .moveHereButton {
+    display: block;
+    background-color: #E1E1E1;
+    color: #A1A1A1;
+    padding: 0;
+    margin: 0;
+    border: 1px dashed #A1A1A1;
+    border-radius: 0;
+    cursor: pointer;
 }
 
 .tabCheckbox {
@@ -153,6 +169,7 @@ input[type="checkbox"] {
 }
 
 .tabGroup {
+    display: grid !important;
     margin-bottom: 20px;
     border: 1px solid #E0E0E0;
     border-radius: 8px;
@@ -191,7 +208,7 @@ input[type="checkbox"] {
     margin-right: 5px;
 }
 
-.groupHeaderContainer .editGroupButton:hover {
+.groupHeaderContainer .editGroupButton:hover, .groupFooterContainer .moveSelectedButton:hover {
     background-color: #3071e8;
 }
 
