@@ -7,12 +7,20 @@ function generateUUID() {
 document.addEventListener('DOMContentLoaded', async () => {
     const homeLink = document.getElementById('homeLink');
     const searchInput = document.getElementById('searchInput');
+    const themeSelector = document.getElementById('themeSelector');
     const settingsButton = document.getElementById('settingsButton');
     const tabsContent = document.getElementById('tabsContent');
     const settingsContent = document.getElementById('settingsContent');
     let savedTabGroups = [];
     let tabsToMove = [];
     let groupIdOfMovingTabs = '';
+
+    // Get saved theme
+    chrome.storage.local.get('savedTheme', (data) => {
+        document.body.className = data.savedTheme;
+
+        themeSelector.value = data.savedTheme;  // Change select based on saved theme
+    });
 
     // Load saved tab groups when the page loads and display it
     await getSavedTabGroupsFromStorage();
@@ -49,6 +57,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Repaint the DOM
         displayTabGroups();
+    });
+
+    // Event listener for the theme selector button
+    themeSelector.addEventListener('change', function() {
+        console.log(this)
+        document.body.className = this.value;
+
+        chrome.storage.local.set({ 'savedTheme': this.value });  // Save theme
     });
 
     // Event listener for the 'Settings' button
