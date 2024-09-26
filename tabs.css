@@ -1,31 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Lora:wght@400;700&display=swap');
+
+:root {
+    /* --- Background Colors --- */
+    --color-background: #f9f6f2;
+    --color-header-bg: #DAD2C6;
+    --color-tab-bg: #F5F0E9;
+    --color-group-bg: #EDE6D6;
+
+    /* --- Text Colors --- */
+    --color-text-primary: #333333;
+    --color-text-secondary: #4A3F35;
+    --color-text-accent: #7A6A5E;
+    --color-text-light: #f9f6f2;
+
+    /* --- Button Colors --- */
+    --color-button-primary: #6B4F4F;
+    --color-button-primary-hover: #8C6E6E;
+    --color-button-remove: #A0522D;
+    --color-button-remove-hover: #8B4513;
+    --color-button-restore: #2E8B57;
+    --color-button-restore-hover: #3CB371;
+
+    /* --- Move Here Button Colors --- */
+    --color-moveHere-bg: #C1B7A4;
+    --color-moveHere-hover-bg: #D1C4B7;
+
+    /* --- Border Colors --- */
+    --color-border-header: #BFAFA1;
+    --color-border-tab: #E0DCCF;
+    --color-border-search: #A89F91;
+
+    /* --- Other Colors --- */
+    --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Merriweather', serif;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
     margin: 0;
     padding: 0;
 }
 
-h1 {
-    text-align: center;
+h2 {
+    font-family: 'Lora', serif;
+    color: var(--color-text-secondary);
 }
 
 button {
-    background-color: #4285F4;
+    background-color: var(--color-button-primary);
     padding: 8px 16px;
-    color: #FFFFFF;
+    color: var(--color-text-light);
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
     margin: 0px 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--color-button-primary-hover);
 }
 
 input[type="checkbox"] {
+    background-color: var(--color-background);
     cursor: pointer;
 }
 
 #resultMessage {
     text-align: center;
     margin-top: 20px;
+    color: var(--color-text-accent);
 }
 
 #pageHeader {
@@ -33,25 +79,21 @@ input[type="checkbox"] {
     top: 0;
     left: 0;
     right: 0;
+    height: 50px;
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #f1f1f1;
+    background-color: var(--color-header-bg);
     padding: 15px 40px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--color-border-header);
+    box-shadow: 0 2px 4px var(--color-shadow);
 }
 
 #headerLeft, #headerCenter, #headerRight {
     flex: 1;
     display: flex;
     align-items: center;
-}
-
-#headerLeft a {
-    font-size: 24px;
-    font-weight: bold;
-    text-decoration: none;
 }
 
 #headerCenter {
@@ -63,33 +105,31 @@ input[type="checkbox"] {
 }
 
 #homeLink {
+    font-size: 28px;
+    font-weight: 700;
     text-decoration: none;
-    font-size: 24px;
-    color: #333;
+    color: var(--color-text-secondary);
 }
 
 #homeLink:hover {
     text-decoration: underline;
 }
 
-#controls {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
 #searchInput {
     width: 100%;
     max-width: 400px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: 16px;
-    border: 2px solid #000000;
+    border: 2px solid var(--color-border-search);
     border-radius: 4px;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
 }
 
 #searchInput:focus {
     outline: none !important;
-    border: 3px solid #4285F4;
-    padding: 7px 11px;
+    border: 3px solid var(--color-button-primary);
+    padding: 9px 13px;
 }
 
 #settingsButton {
@@ -101,7 +141,7 @@ input[type="checkbox"] {
 }
 
 #settingsButton:hover {
-    color: #666;
+    opacity: 0.8;
 }
 
 #settingsButton .iconImage {
@@ -128,8 +168,8 @@ input[type="checkbox"] {
 
 .tabList li {
     display: grid !important;
-    background-color: #FFFFFF;
-    border-bottom: 1px solid #E0E0E0;
+    background-color: var(--color-tab-bg);
+    border-bottom: 1px solid var(--color-border-tab);
 }
 
 .tabList li:last-child {
@@ -144,8 +184,8 @@ input[type="checkbox"] {
 
 .tabList li .tabContainer a {
     text-decoration: none;
-    color: #1A0DAB;
-    font-size: 14px;
+    color: var(--color-text-secondary);
+    font-size: 16px;
     flex-grow: 1;
 }
 
@@ -155,13 +195,18 @@ input[type="checkbox"] {
 
 .tabList li .moveHereButton, .tabGroup .moveHereButton {
     display: block;
-    background-color: #E1E1E1;
-    color: #A1A1A1;
+    background-color: var(--color-moveHere-bg);
+    color: var(--color-text-accent);
     padding: 0;
     margin: 0;
-    border: 1px dashed #A1A1A1;
+    border: 1px dashed var(--color-text-accent);
     border-radius: 0;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tabList li .moveHereButton:hover, .tabGroup .moveHereButton:hover {
+    background-color: var(--color-moveHere-hover-bg);
 }
 
 .tabCheckbox {
@@ -171,15 +216,16 @@ input[type="checkbox"] {
 .tabGroup {
     display: grid !important;
     margin-bottom: 20px;
-    border: 1px solid #E0E0E0;
+    border: 1px solid var(--color-border-tab);
     border-radius: 8px;
     overflow: hidden;
+    background-color: var(--color-tab-bg);
 }
 
 .groupHeaderContainer, .groupFooterContainer {
     display: flex;
     align-items: center;
-    background-color: #f1f1f1;
+    background-color: var(--color-group-bg);
     padding: 10px 15px;
 }
 
@@ -198,32 +244,31 @@ input[type="checkbox"] {
 }
 
 .groupHeaderContainer .groupTitle[contenteditable="true"] {
-    outline: 2px solid #4285F4;
-    background-color: #fff;
+    outline: 2px solid var(--color-button-primary);
+    background-color: var(--color-background);
+    padding: 2px;
+    border-radius: 4px;
 }
 
 .groupFooterContainer .tabsCount {
     display: flex;
     justify-content: flex-end;
     margin-right: 5px;
-}
-
-.groupHeaderContainer .editGroupButton:hover, .groupFooterContainer .moveSelectedButton:hover {
-    background-color: #3071e8;
+    color: var(--color-text-accent);
 }
 
 .groupHeaderContainer .removeGroupButton, .groupFooterContainer .removeSelectedButton, .removeTabButton {
-    background-color: #d9534f;
+    background-color: var(--color-button-remove);
 }
 
 .groupHeaderContainer .removeGroupButton:hover, .groupFooterContainer .removeSelectedButton:hover, .removeTabButton:hover {
-    background-color: #c9302c;
+    background-color: var(--color-button-remove-hover);
 }
 
 .groupHeaderContainer .restoreGroupButton, .groupFooterContainer .restoreSelectedButton {
-    background-color: #34A853;
+    background-color: var(--color-button-restore);
 }
 
 .groupHeaderContainer .restoreGroupButton:hover, .groupFooterContainer .restoreSelectedButton:hover {
-    background-color: #2c8c47;
+    background-color: var(--color-button-restore-hover);
 }
