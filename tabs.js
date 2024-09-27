@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let bookShelfData = [];
     let pagesToMove = [];
     let bookIdOfMovingPages = '';
+    let bookShelfDataUpdated = false;
+    let loadingBookShelfData = false;
 
     // Get saved theme
     chrome.storage.local.get('themeSelected', (data) => {
@@ -27,6 +29,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Get bookshelf saved data and display it
     await LoadBookShelfDataFromStorage();
     displayBookShelf();
+
+    // Create a timer that check if there are bookshelf data to save
+    let intervalId = setInterval(() => {
+        if (bookShelfDataUpdated && !loadingBookShelfData) {
+            chrome.storage.local.set({ 'bookShelfData': bookShelfData }, () => {
+                // Check for errors
+                if (chrome.runtime.lastError) {
+                    console.error('Error setting storage:', chrome.runtime.lastError);
+
+                    // TODO: Handle the error accordingly
+                }
+            });
+
+            bookShelfDataUpdated = false;
+        }
+    }, 2000);
 
     // Event listener for messages from background.js
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -82,20 +100,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Function to get bookshelf saved data from storage
     async function LoadBookShelfDataFromStorage() {
+        loadingBookShelfData = true;
         const data = await chrome.storage.local.get('bookShelfData');
         bookShelfData = data.bookShelfData || [];
+        loadingBookShelfData = false;
     }
 
     // Function to set bookshelf data to storage
     async function saveBookShelfDataToStorage() {
-        await chrome.storage.local.set({ 'bookShelfData': bookShelfData }, () => {
-            // Check for errors
-            if (chrome.runtime.lastError) {
-                console.error('Error setting storage:', chrome.runtime.lastError);
-
-                // TODO: Handle the error accordingly
-            }
-        });
+        bookShelfDataUpdated = true;  // bookshelf data has changed
     }
 
     // Function to display bookshelf data on the main page
