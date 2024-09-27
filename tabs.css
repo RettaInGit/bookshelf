@@ -2,6 +2,40 @@
 
 :root {
     /* --- Background Colors --- */
+    --color-background: #EEE7DD;
+    --color-header-bg: #C5B299;
+    --color-tab-bg: #F0E3D1;
+    --color-group-bg: #C3B29D;
+
+    /* --- Text Colors --- */
+    --color-text-primary: #3B302A;
+    --color-text-secondary: #5C4F44;
+    --color-text-accent: #8B7A6A;
+    --color-text-light: #EEE7DD;
+
+    /* --- Button Colors --- */
+    --color-button-primary: #7B5E4A;
+    --color-button-primary-hover: #9B7355;
+    --color-button-remove: #A0522D;
+    --color-button-remove-hover: #8B4513;
+    --color-button-restore: #2E8B57;
+    --color-button-restore-hover: #3CB371;
+
+    /* --- Move Here Button Colors --- */
+    --color-moveHere-bg: #B4A391;
+    --color-moveHere-hover-bg: #CABBA7;
+
+    /* --- Border Colors --- */
+    --color-border-header: #A99988;
+    --color-border-tab: #D4C6B2;
+    --color-border-search: #B3A292;
+
+    /* --- Other Colors --- */
+    --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+.lightTheme2 {
+    /* --- Background Colors --- */
     --color-background: #f9f6f2;
     --color-header-bg: #DAD2C6;
     --color-tab-bg: #F5F0E9;
@@ -34,38 +68,38 @@
     --color-shadow: rgba(0, 0, 0, 0.1);
 }
 
-.darkTheme {
+.darkTheme1 {
     /* --- Background Colors --- */
-    --color-background: #2d2a26;
-    --color-header-bg: #3c3a36;
-    --color-tab-bg: #45413e;
-    --color-group-bg: #3f3b37;
+    --color-background: #5B4E41;
+    --color-header-bg: #3E362E;
+    --color-tab-bg: #4A4238;
+    --color-group-bg: #41372D;
 
     /* --- Text Colors --- */
-    --color-text-primary: #efefe8;
-    --color-text-secondary: #bcb8b1;
-    --color-text-accent: #d8d2cd;
-    --color-text-light: #3c3a36;
+    --color-text-primary: #F5F1EB;
+    --color-text-secondary: #D6C8B8;
+    --color-text-accent: #BFAD9A;
+    --color-text-light: #BAA68C;
 
     /* --- Button Colors --- */
-    --color-button-primary: #a58f8f;
-    --color-button-primary-hover: #bfa4a4;
-    --color-button-remove: #bf7c4c;
-    --color-button-remove-hover: #d58b57;
-    --color-button-restore: #7ea98d;
-    --color-button-restore-hover: #94c2a3;
+    --color-button-primary: #70584A;
+    --color-button-primary-hover: #8A6B58;
+    --color-button-remove: #7A513E;
+    --color-button-remove-hover: #6A4734;
+    --color-button-restore: #3A6B4A;
+    --color-button-restore-hover: #48855D;
 
     /* --- Move Here Button Colors --- */
-    --color-moveHere-bg: #56524d;
-    --color-moveHere-hover-bg: #63605a;
+    --color-moveHere-bg: #6F6255;
+    --color-moveHere-hover-bg: #837465;
 
     /* --- Border Colors --- */
-    --color-border-header: #625e5a;
-    --color-border-tab: #6f6b67;
-    --color-border-search: #7d7974;
+    --color-border-header: #66584A;
+    --color-border-tab: #7A6A5A;
+    --color-border-search: #5F5143;
 
     /* --- Other Colors --- */
-    --color-shadow: rgba(0, 0, 0, 0.2);
+    --color-shadow: rgba(0, 0, 0, 0.3);
 }
 
 .darkTheme2 {
@@ -234,6 +268,11 @@ input[type="checkbox"] {
     padding: 9px 13px;
 }
 
+#searchInput::placeholder {
+    color: var(--color-text-accent);
+    opacity: 1;
+}
+
 select {
     padding: 8px 16px;
     font-size: 14px;
@@ -243,6 +282,7 @@ select {
     color: var(--color-text-light);
     appearance: none;
     cursor: pointer;
+    text-align-last: center;
 }
 
 select:hover {
