@@ -328,7 +328,7 @@ select:focus {
 }
 
 .tabList li {
-    display: grid !important;
+    display: grid;
     background-color: var(--color-tab-bg);
     border-bottom: 1px solid var(--color-border-tab);
 }
@@ -375,7 +375,7 @@ select:focus {
 }
 
 .tabGroup {
-    display: grid !important;
+    display: grid;
     margin-bottom: 20px;
     border: 1px solid var(--color-border-tab);
     border-radius: 8px;

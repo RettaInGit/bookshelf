@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Get saved theme
     chrome.storage.local.get('savedTheme', (data) => {
+        if (!data.savedTheme) data.savedTheme = '';
+
         document.body.className = data.savedTheme;
 
         themeSelector.value = data.savedTheme;  // Change select based on saved theme
@@ -86,7 +88,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Function to set saved tabs to storage
     async function setSavedTabGroupsToStorage() {
-        await chrome.storage.local.set({ 'savedTabGroups': savedTabGroups });
+        await chrome.storage.local.set({ 'savedTabGroups': savedTabGroups }, () => {
+            // Check for errors
+            if (chrome.runtime.lastError) {
+              console.error('Error setting storage:', chrome.runtime.lastError);
+
+              // TODO: Handle the error accordingly
+            }
+        });
     }
 
     // Function to display tab groups on the page
@@ -230,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Show or hide the tab based on whether the query is included in the title
                 if (tab.title.toLowerCase().includes(currentSearchQuery)) {
-                    listItem.style.display = 'flex';
+                    listItem.style.display = 'grid';
                     anyTabVisible = true;
                 } else {
                     listItem.style.display = 'none';
@@ -296,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Show or hide the group based on whether any tabs are visible
             if (anyTabVisible) {
-                groupContainer.style.display = 'block';
+                groupContainer.style.display = 'grid';
             } else {
                 groupContainer.style.display = 'none';
             }
@@ -693,6 +702,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         groupIds = new Set(tabsToMove.map(tab => tab.id));
         savedTabGroups[groupIndex].tabs = savedTabGroups[groupIndex].tabs.filter(tab => !groupIds.has(tab.id));
 
+        // Remove the group if no tabs are left
+        if (savedTabGroups[groupIndex].tabs.length === 0) {
+            removeTabGroup(groupId);
+        }
+        else {
+            // Update tabs count
+            updateTabCount(groupIdOfMovingTabs);
+        }
+
+        // Update tabs count
+        updateTabCount(groupId);
+
         // Clear the array and the group ID
         tabsToMove = [];
         groupIdOfMovingTabs = '';
@@ -723,7 +744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const groupContainer = document.querySelectorAll('.tabGroup');
 
         // Check if any group is visible
-        let anyGroupsVisible = Object.values(groupContainer).some(group => group.style.display === 'block');
+        let anyGroupsVisible = Object.values(groupContainer).some(group => group.style.display === 'grid');
 
         // Display message
         if (savedTabGroups.length === 0) {
