@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tab Manager</title>
+    <title>Bookshelf</title>
     <script src="tabs.js" defer></script>
     <link rel="stylesheet" href="tabs.css">
 </head>
 <body>
-    <!-- Header -->
-    <header id="pageHeader">
-        <div id="headerLeft">
-            <a href="#" id="homeLink">Tab Manager</a>
+    <!-- Main Header -->
+    <header id="mainHeader">
+        <div id="mainHeaderLeft">
+            <a href="#" id="homePageLink">Bookshelf</a>
         </div>
-        <div id="headerCenter">
-            <input type="text" id="searchInput" placeholder="Search tabs...">
+        <div id="mainHeaderCenter">
+            <input type="text" id="searchBar" placeholder="Search pages...">
         </div>
-        <div id="headerRight">
+        <div id="mainHeaderRight">
             <!-- Theme Selector -->
-            <select id="themeSelector" aria-label="Select Theme">
+            <select id="themeSelector" title="Select theme">
                 <option value="">Light Theme 1</option>
                 <option value="lightTheme2">Light Theme 2</option>
                 <option value="darkTheme1">Dark Theme 1</option>
@@ -24,26 +24,24 @@
                 <option value="darkTheme3">Dark Theme 3</option>
             </select>
             <!-- Settings Button -->
-            <button id="settingsButton" title="Settings">
-                <img src="icons/gear_icon.png" alt="Settings" class="iconImage">
+            <button id="settingsPageButton" title="Go to settings page">
+                <img src="icons/gear_icon.png" alt="Go to settings page">
             </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div id="mainContent">
-        <!-- Tabs Content -->
-        <div id="tabsContent">
-            <p id="resultMessage">Loading saved data...</p>
-            <!-- Tab Groups will be displayed here -->
-            <div id="tabGroups"></div>
+    <!-- Main Body -->
+    <div id="mainBody">
+        <!-- Main Page -->
+        <div id="mainPage">
+            <p id="resultMessage">Loading your bookshelf...</p>
+            <div id="bookShelf"></div>
         </div>
 
-        <!-- Settings Content (Initially Hidden) -->
-        <div id="settingsContent" style="display: none;">
+        <!-- Settings Page -->
+        <div id="settingsPage" style="display: none;">
             <h2>Settings</h2>
-            <!-- Add your settings options here -->
-            <p>Settings page content will go here.</p>
+            <p>Customize your Bookshelf settings here.</p>
         </div>
     </div>
 </body>

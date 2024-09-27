@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Tab Manager Extension",
-  "version": "1.0",
-  "description": "Manage and organize your open tabs.",
+  "name": "Bookshelf",
+  "version": "0.9",
+  "description": "Store and manage your open tabs in a well-arranged bookshelf to save memory.",
   "permissions": [
     "tabs",
     "storage",
@@ -17,6 +17,14 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
-  }
+    },
+    "default_title": "Bookshelf"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "homepage_url": "https://your-extension-homepage.com"
 }

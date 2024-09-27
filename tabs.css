@@ -4,8 +4,8 @@
     /* --- Background Colors --- */
     --color-background: #EEE7DD;
     --color-header-bg: #C5B299;
-    --color-tab-bg: #F0E3D1;
-    --color-group-bg: #C3B29D;
+    --color-page-bg: #F0E3D1;
+    --color-book-bg: #C3B29D;
 
     /* --- Text Colors --- */
     --color-text-primary: #3B302A;
@@ -27,7 +27,7 @@
 
     /* --- Border Colors --- */
     --color-border-header: #A99988;
-    --color-border-tab: #D4C6B2;
+    --color-border-page: #D4C6B2;
     --color-border-search: #B3A292;
 
     /* --- Other Colors --- */
@@ -38,8 +38,8 @@
     /* --- Background Colors --- */
     --color-background: #f9f6f2;
     --color-header-bg: #DAD2C6;
-    --color-tab-bg: #F5F0E9;
-    --color-group-bg: #EDE6D6;
+    --color-page-bg: #F5F0E9;
+    --color-book-bg: #EDE6D6;
 
     /* --- Text Colors --- */
     --color-text-primary: #333333;
@@ -61,7 +61,7 @@
 
     /* --- Border Colors --- */
     --color-border-header: #BFAFA1;
-    --color-border-tab: #E0DCCF;
+    --color-border-page: #E0DCCF;
     --color-border-search: #A89F91;
 
     /* --- Other Colors --- */
@@ -72,8 +72,8 @@
     /* --- Background Colors --- */
     --color-background: #5B4E41;
     --color-header-bg: #3E362E;
-    --color-tab-bg: #4A4238;
-    --color-group-bg: #41372D;
+    --color-page-bg: #4A4238;
+    --color-book-bg: #41372D;
 
     /* --- Text Colors --- */
     --color-text-primary: #F5F1EB;
@@ -95,7 +95,7 @@
 
     /* --- Border Colors --- */
     --color-border-header: #66584A;
-    --color-border-tab: #7A6A5A;
+    --color-border-page: #7A6A5A;
     --color-border-search: #5F5143;
 
     /* --- Other Colors --- */
@@ -106,8 +106,8 @@
     /* --- Background Colors --- */
     --color-background: #2e2e2e;
     --color-header-bg: #3a3a3a;
-    --color-tab-bg: #454545;
-    --color-group-bg: #404040;
+    --color-page-bg: #454545;
+    --color-book-bg: #404040;
 
     /* --- Text Colors --- */
     --color-text-primary: #e0e0e0;
@@ -129,7 +129,7 @@
 
     /* --- Border Colors --- */
     --color-border-header: #555555;
-    --color-border-tab: #6a6a6a;
+    --color-border-page: #6a6a6a;
     --color-border-search: #888888;
 
     /* --- Other Colors --- */
@@ -140,8 +140,8 @@
     /* --- Background Colors --- */
     --color-background: #1e1e1e;
     --color-header-bg: #2c2c2c;
-    --color-tab-bg: #3a3a3a;
-    --color-group-bg: #333333;
+    --color-page-bg: #3a3a3a;
+    --color-book-bg: #333333;
 
     /* --- Text Colors --- */
     --color-text-primary: #f9f6f2;
@@ -163,7 +163,7 @@
 
     /* --- Border Colors --- */
     --color-border-header: #444444;
-    --color-border-tab: #595959;
+    --color-border-page: #595959;
     --color-border-search: #777777;
 
     /* --- Other Colors --- */
@@ -210,7 +210,7 @@ input[type="checkbox"] {
     color: var(--color-text-accent);
 }
 
-#pageHeader {
+#mainHeader {
     position: fixed;
     top: 0;
     left: 0;
@@ -226,32 +226,32 @@ input[type="checkbox"] {
     box-shadow: 0 2px 4px var(--color-shadow);
 }
 
-#headerLeft, #headerCenter, #headerRight {
+#mainHeaderLeft, #mainHeaderCenter, #mainHeaderRight {
     flex: 1;
     display: flex;
     align-items: center;
 }
 
-#headerCenter {
+#mainHeaderCenter {
     justify-content: center;
 }
 
-#headerRight {
+#mainHeaderRight {
     justify-content: flex-end;
 }
 
-#homeLink {
+#homePageLink {
     font-size: 28px;
     font-weight: 700;
     text-decoration: none;
     color: var(--color-text-secondary);
 }
 
-#homeLink:hover {
+#homePageLink:hover {
     text-decoration: underline;
 }
 
-#searchInput {
+#searchBar {
     width: 100%;
     max-width: 400px;
     padding: 10px 14px;
@@ -262,13 +262,13 @@ input[type="checkbox"] {
     color: var(--color-text-primary);
 }
 
-#searchInput:focus {
+#searchBar:focus {
     outline: none !important;
     border: 3px solid var(--color-button-primary);
     padding: 9px 13px;
 }
 
-#searchInput::placeholder {
+#searchBar::placeholder {
     color: var(--color-text-accent);
     opacity: 1;
 }
@@ -293,7 +293,7 @@ select:focus {
     outline: none;
 }
 
-#settingsButton {
+#settingsPageButton {
     background-color: transparent;
     border: none;
     padding: 0;
@@ -301,60 +301,64 @@ select:focus {
     margin-left: 10px;
 }
 
-#settingsButton:hover {
+#settingsPageButton:hover {
     opacity: 0.8;
 }
 
-#settingsButton .iconImage {
+#settingsPageButton img {
     width: 36px;
     height: 36px;
 }
 
-#mainContent {
+#mainBody {
     max-width: 1000px;
     margin: 90px auto 20px;
     padding: 20px;
 }
 
-#tabsContent, #settingsContent {
+#mainPage, #settingsPage {
     width: 100%;
 }
 
-.tabList {
+#bookShelf {
+    display: grid;
+}
+
+.pagesList {
     display: grid;
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
-.tabList li {
+.pagesList li {
     display: grid;
-    background-color: var(--color-tab-bg);
-    border-bottom: 1px solid var(--color-border-tab);
+    background-color: var(--color-page-bg);
+    border-bottom: 1px solid var(--color-border-page);
 }
 
-.tabList li:last-child {
+.pagesList li:last-child {
     border-bottom: none;
 }
 
-.tabList li .tabContainer {
+.pagesList li .pageContainer {
     display: flex;
     align-items: center;
     padding: 10px 15px;
 }
 
-.tabList li .tabContainer a {
+.pagesList li .pageContainer a {
     text-decoration: none;
     color: var(--color-text-secondary);
     font-size: 16px;
     flex-grow: 1;
 }
 
-.tabList li .tabContainer a:hover {
+.pagesList li .pageContainer a:hover {
     text-decoration: underline;
 }
 
-.tabList li .moveHereButton, .tabGroup .moveHereButton {
+.pagesList li .moveHereButton, .bookContainer .moveHereButton {
     display: block;
     background-color: var(--color-moveHere-bg);
     color: var(--color-text-accent);
@@ -366,70 +370,70 @@ select:focus {
     transition: background-color 0.3s ease;
 }
 
-.tabList li .moveHereButton:hover, .tabGroup .moveHereButton:hover {
+.pagesList li .moveHereButton:hover, .bookContainer .moveHereButton:hover {
     background-color: var(--color-moveHere-hover-bg);
 }
 
-.tabCheckbox {
+.pageCheckbox {
     margin-right: 10px;
 }
 
-.tabGroup {
+.bookContainer {
     display: grid;
     margin-bottom: 20px;
-    border: 1px solid var(--color-border-tab);
+    border: 1px solid var(--color-border-page);
     border-radius: 8px;
     overflow: hidden;
-    background-color: var(--color-tab-bg);
+    background-color: var(--color-page-bg);
 }
 
-.groupHeaderContainer, .groupFooterContainer {
+.bookHeaderContainer, .bookFooterContainer {
     display: flex;
     align-items: center;
-    background-color: var(--color-group-bg);
+    background-color: var(--color-book-bg);
     padding: 10px 15px;
 }
 
-.groupHeaderContainer {
+.bookHeaderContainer {
     cursor: pointer;
 }
 
-.groupHeaderContainer .masterCheckbox {
+.bookHeaderContainer .masterCheckbox {
     margin-right: 10px;
 }
 
-.groupHeaderContainer .groupTitle, .groupFooterContainer .tabsCount {
+.bookHeaderContainer .bookTitle, .bookFooterContainer .pagesCount {
     flex-grow: 1;
     margin: 0;
     padding: 0;
 }
 
-.groupHeaderContainer .groupTitle[contenteditable="true"] {
+.bookHeaderContainer .bookTitle[contentedipagele="true"] {
     outline: 2px solid var(--color-button-primary);
     background-color: var(--color-background);
     padding: 2px;
     border-radius: 4px;
 }
 
-.groupFooterContainer .tabsCount {
+.bookFooterContainer .pagesCount {
     display: flex;
     justify-content: flex-end;
     margin-right: 5px;
     color: var(--color-text-accent);
 }
 
-.groupHeaderContainer .removeGroupButton, .groupFooterContainer .removeSelectedButton, .removeTabButton {
+.bookHeaderContainer .removeBookButton, .bookFooterContainer .removeSelectedButton, .removePageButton {
     background-color: var(--color-button-remove);
 }
 
-.groupHeaderContainer .removeGroupButton:hover, .groupFooterContainer .removeSelectedButton:hover, .removeTabButton:hover {
+.bookHeaderContainer .removeBookButton:hover, .bookFooterContainer .removeSelectedButton:hover, .removePageButton:hover {
     background-color: var(--color-button-remove-hover);
 }
 
-.groupHeaderContainer .restoreGroupButton, .groupFooterContainer .restoreSelectedButton {
+.bookHeaderContainer .restoreBookButton, .bookFooterContainer .restoreSelectedButton {
     background-color: var(--color-button-restore);
 }
 
-.groupHeaderContainer .restoreGroupButton:hover, .groupFooterContainer .restoreSelectedButton:hover {
+.bookHeaderContainer .restoreBookButton:hover, .bookFooterContainer .restoreSelectedButton:hover {
     background-color: var(--color-button-restore-hover);
 }
