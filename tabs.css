@@ -331,34 +331,34 @@ select:focus {
     margin: 0;
 }
 
-.pagesList li {
+.pagesList .pagesListItem {
     display: grid;
     background-color: var(--color-page-bg);
     border-bottom: 1px solid var(--color-border-page);
 }
 
-.pagesList li:last-child {
+.pagesList .pagesListItem:last-child {
     border-bottom: none;
 }
 
-.pagesList li .pageContainer {
+.pagesList .pagesListItem .pageContainer {
     display: flex;
     align-items: center;
     padding: 10px 15px;
 }
 
-.pagesList li .pageContainer a {
+.pagesList .pagesListItem .pageContainer .pageLink {
     text-decoration: none;
     color: var(--color-text-secondary);
     font-size: 16px;
     flex-grow: 1;
 }
 
-.pagesList li .pageContainer a:hover {
+.pagesList .pagesListItem .pageContainer a:hover {
     text-decoration: underline;
 }
 
-.pagesList li .moveHereButton, .bookContainer .moveHereButton {
+.pagesList .pagesListItem .moveHereButton, .bookContainer .moveHereButton {
     display: block;
     background-color: var(--color-moveHere-bg);
     color: var(--color-text-accent);
@@ -370,7 +370,7 @@ select:focus {
     transition: background-color 0.3s ease;
 }
 
-.pagesList li .moveHereButton:hover, .bookContainer .moveHereButton:hover {
+.pagesList .pagesListItem .moveHereButton:hover, .bookContainer .moveHereButton:hover {
     background-color: var(--color-moveHere-hover-bg);
 }
 
@@ -387,53 +387,53 @@ select:focus {
     background-color: var(--color-page-bg);
 }
 
-.bookHeaderContainer, .bookFooterContainer {
+.bookHeader, .bookFooter {
     display: flex;
     align-items: center;
     background-color: var(--color-book-bg);
     padding: 10px 15px;
 }
 
-.bookHeaderContainer {
+.bookHeader {
     cursor: pointer;
 }
 
-.bookHeaderContainer .masterCheckbox {
+.bookHeader .bookCheckbox {
     margin-right: 10px;
 }
 
-.bookHeaderContainer .bookTitle, .bookFooterContainer .pagesCount {
+.bookHeader .bookTitle, .bookFooter .pagesCount {
     flex-grow: 1;
     margin: 0;
     padding: 0;
 }
 
-.bookHeaderContainer .bookTitle[contentedipagele="true"] {
+.bookHeader .bookTitle[contenteditable="true"] {
     outline: 2px solid var(--color-button-primary);
     background-color: var(--color-background);
     padding: 2px;
     border-radius: 4px;
 }
 
-.bookFooterContainer .pagesCount {
+.bookFooter .pagesCount {
     display: flex;
     justify-content: flex-end;
     margin-right: 5px;
     color: var(--color-text-accent);
 }
 
-.bookHeaderContainer .removeBookButton, .bookFooterContainer .removeSelectedButton, .removePageButton {
+.bookHeader .removeBookButton, .pagesList .pagesListItem .pageContainer .removePageButton, .bookFooter .removeSelectedPagesButton {
     background-color: var(--color-button-remove);
 }
 
-.bookHeaderContainer .removeBookButton:hover, .bookFooterContainer .removeSelectedButton:hover, .removePageButton:hover {
+.bookHeader .removeBookButton:hover, .pagesList .pagesListItem .pageContainer .removePageButton .removePageButton:hover, .bookFooter .removeSelectedPagesButton:hover {
     background-color: var(--color-button-remove-hover);
 }
 
-.bookHeaderContainer .restoreBookButton, .bookFooterContainer .restoreSelectedButton {
+.bookHeader .restoreBookButton, .bookFooter .restoreSelectedPagesButton {
     background-color: var(--color-button-restore);
 }
 
-.bookHeaderContainer .restoreBookButton:hover, .bookFooterContainer .restoreSelectedButton:hover {
+.bookHeader .restoreBookButton:hover, .bookFooter .restoreSelectedPagesButton:hover {
     background-color: var(--color-button-restore-hover);
 }
