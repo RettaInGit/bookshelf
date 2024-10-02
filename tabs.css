@@ -202,6 +202,12 @@ button:hover {
 input[type="checkbox"] {
     background-color: var(--color-background);
     cursor: pointer;
+    margin: 0 5px;
+    margin-right: 20px;
+}
+
+svg path {
+    fill: var(--color-text-secondary);
 }
 
 #resultMessage {
@@ -294,19 +300,15 @@ input[type="checkbox"] {
 
 #settingsPageButton {
     background-color: transparent;
+    width: 36px;
+    height: 36px;
     border: none;
     padding: 0;
-    cursor: pointer;
     margin-left: 10px;
 }
 
 #settingsPageButton:hover {
     opacity: 0.8;
-}
-
-#settingsPageButton img {
-    width: 36px;
-    height: 36px;
 }
 
 #mainBody {
@@ -419,10 +421,6 @@ input[type="checkbox"] {
     background-color: var(--color-moveHere-hover-bg);
 }
 
-.pageCheckbox {
-    margin-right: 10px;
-}
-
 .bookContainer {
     display: grid;
     margin-bottom: 20px;
@@ -432,15 +430,39 @@ input[type="checkbox"] {
     background-color: var(--color-page-bg);
 }
 
-.bookHeader, .bookFooter {
-    display: flex;
+.bookHeader, .bookHeaderTop, .bookHeaderBottom {
     align-items: center;
+    cursor: pointer;
     background-color: var(--color-book-bg);
-    padding: 10px 15px;
 }
 
 .bookHeader {
-    cursor: pointer;
+    display: grid;
+    padding: 15px;
+}
+
+.bookHeaderTop {
+    display: flex;
+    margin-bottom: 5px;
+}
+
+.editBookTitleButton {
+    background-color: transparent;
+    width: 23px;
+    height: 23px;
+    border: none;
+    padding: 0;
+    margin: 0 15px 0 0;
+}
+
+.editBookTitleButton:hover {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.bookHeaderBottom {
+    display: flex;
+    margin-top: 5px;
 }
 
 .bookCheckbox {
@@ -456,7 +478,6 @@ input[type="checkbox"] {
 .bookTitle[contenteditable="true"] {
     outline: 2px solid var(--color-button-primary);
     background-color: var(--color-background);
-    padding: 2px;
     border-radius: 4px;
 }
 
@@ -467,18 +488,22 @@ input[type="checkbox"] {
     color: var(--color-text-accent);
 }
 
-.removeBookButton, .removePageButton, .removeSelectedPagesButton {
+.moveSelectedPagesButton {
+    margin-left: 0;
+}
+
+.removePageButton, .removeSelectedPagesButton {
     background-color: var(--color-button-remove);
 }
 
-.removeBookButton:hover, .removePageButton:hover, .removeSelectedPagesButton:hover {
+.removePageButton:hover, .removeSelectedPagesButton:hover {
     background-color: var(--color-button-remove-hover);
 }
 
-.restoreBookButton, .restoreSelectedPagesButton {
+.restoreSelectedPagesButton {
     background-color: var(--color-button-restore);
 }
 
-.restoreBookButton:hover, .restoreSelectedPagesButton:hover {
+.restoreSelectedPagesButton:hover {
     background-color: var(--color-button-restore-hover);
 }

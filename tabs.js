@@ -139,42 +139,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentSearchQuery = searchBar.value.trim().toLowerCase();  // Get current filtering query
         const areThereAnyPagesToMove = (pagesToMove.length !== 0) && (bookShelfData.findIndex(book => book.id === bookIdOfMovingPages) !== -1);
 
-        // Function to create the book checkbox
-        function createBookCheckbox(bookId) {
-            const bookCheckbox = document.createElement('input');
-            bookCheckbox.type = 'checkbox';
-            bookCheckbox.className = 'bookCheckbox';
-            bookCheckbox.title = 'Select/Deselect All Pages in this Book';
-
-            // Toggle all checkboxes in a book
-            bookCheckbox.addEventListener('change', () => {
-                const pageCheckboxes = getBookElementById(bookId).getAllPageCheckbox();
-
-                pageCheckboxes.forEach((checkbox) => {
-                    checkbox.checked = bookCheckbox.checked;
-                });
-            });
-
-            return bookCheckbox;
-        }
-
-        // Function to create the book title
-        function createBookTitle(bookTitle) {
-            const bookTitleElem = document.createElement('h2');
-            bookTitleElem.textContent = bookTitle;
-            bookTitleElem.className = 'bookTitle';
-            bookTitleElem.contentEditable = false;
-
-            return bookTitleElem;
-        }
-
         // Function to create the edit book title button
         function createEditBookTitleButton(bookId) {
             const editBookTitleButton = document.createElement('button');
-            editBookTitleButton.textContent = 'Edit title';
             editBookTitleButton.title = 'Edit book title';
             editBookTitleButton.className = 'editBookTitleButton';
             editBookTitleButton.dataset.mode = 'edit';
+
+            // Create SVG element
+            const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgElem.setAttribute('viewBox', '0 0 48 48');
+            svgElem.setAttribute('width', '23px');
+            svgElem.setAttribute('height', '23px');
+            const pathElem = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElem.setAttribute('d', 'M38.657 18.536l2.44-2.44c2.534-2.534 2.534-6.658 0-9.193-1.227-1.226-2.858-1.9-4.597-1.9s-3.371.675-4.597 1.901l-2.439 2.439L38.657 18.536zM27.343 11.464L9.274 29.533c-.385.385-.678.86-.848 1.375L5.076 41.029c-.179.538-.038 1.131.363 1.532C5.726 42.847 6.108 43 6.5 43c.158 0 .317-.025.472-.076l10.118-3.351c.517-.17.993-.463 1.378-.849l18.068-18.068L27.343 11.464z');
+
+            // Append elements in the correct order
+            svgElem.appendChild(pathElem);
+            editBookTitleButton.appendChild(svgElem);
 
             // Toggle between edit and save modes for the book title
             editBookTitleButton.addEventListener('click', () => {
@@ -202,7 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     // Change button to 'Save'
-                    editBookTitleButton.textContent = 'Save title';
                     editBookTitleButton.title = 'Save book title';
                     editBookTitleButton.dataset.mode = 'save';
 
@@ -233,7 +214,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     bookTitle.contentEditable = false;
 
                     // Reset the edit button
-                    editBookTitleButton.textContent = 'Edit title';
                     editBookTitleButton.title = 'Edit book title';
                     editBookTitleButton.dataset.mode = 'edit';
 
@@ -245,309 +225,65 @@ document.addEventListener('DOMContentLoaded', async () => {
             return editBookTitleButton;
         }
 
-        // Function to create the restore book button
-        function createRestoreBookButton(bookId) {
-            const restoreBookButton = document.createElement('button');
-            restoreBookButton.textContent = 'Restore';
-            restoreBookButton.title = 'Restore this book';
-            restoreBookButton.className = 'restoreBookButton';
+        // Function to create the book title
+        function createBookTitle(bookTitle) {
+            const bookTitleElem = document.createElement('h2');
+            bookTitleElem.textContent = bookTitle;
+            bookTitleElem.className = 'bookTitle';
+            bookTitleElem.contentEditable = false;
 
-            // Restore book pages
-            restoreBookButton.addEventListener('click', () => {
-                // Find the book by ID
-                const book = bookShelfData.find(book => book.id === bookId);
-                if (!book) return;
+            return bookTitleElem;
+        }
 
-                // Restore pages
-                book.pages.forEach(page => {
-                    chrome.tabs.create({ url: page.url });
+        // Function to create a pages count
+        function createPagesCount(bookPagesLength) {
+            const pagesCount = document.createElement('h2');
+            pagesCount.textContent = `${bookPagesLength} Page${bookPagesLength !== 1 ? 's' : ''}`;
+            pagesCount.className = 'pagesCount';
+
+            return pagesCount;
+        }
+
+        // Function to create the top part of a book header
+        function createBookHeaderTop(book) {
+            const bookHeaderTop = document.createElement('div');
+            bookHeaderTop.className = 'bookHeaderTop';
+
+            // Create children elements
+            const editBookTitleButton = createEditBookTitleButton(book.id);
+            const bookTitle = createBookTitle(book.title);
+            const pagesCount = createPagesCount(book.pages.length);
+
+            // Append elements to the top header in the desired order
+            bookHeaderTop.appendChild(editBookTitleButton);
+            bookHeaderTop.appendChild(bookTitle);
+            bookHeaderTop.appendChild(pagesCount);
+
+            // Create functions to retrieve nested elements
+            bookHeaderTop.getEditBookTitleButton = function() {return editBookTitleButton;}
+            bookHeaderTop.getBookTitle = function() {return bookTitle;}
+            bookHeaderTop.getPagesCount = function() {return pagesCount;}
+
+            return bookHeaderTop;
+        }
+
+        // Function to create the book checkbox
+        function createBookCheckbox(bookId) {
+            const bookCheckbox = document.createElement('input');
+            bookCheckbox.type = 'checkbox';
+            bookCheckbox.className = 'bookCheckbox';
+            bookCheckbox.title = 'Select/Deselect All Pages in this Book';
+
+            // Toggle all checkboxes in a book
+            bookCheckbox.addEventListener('change', () => {
+                const pageCheckboxes = getBookElementById(bookId).getAllPageCheckbox();
+
+                pageCheckboxes.forEach((checkbox) => {
+                    checkbox.checked = bookCheckbox.checked;
                 });
             });
 
-            return restoreBookButton;
-        }
-
-        // Function to create the remove book button
-        function createRemoveBookButton(bookId) {
-            const removeBookButton = document.createElement('button');
-            removeBookButton.textContent = 'Remove';
-            removeBookButton.title = 'Remove this book';
-            removeBookButton.className = 'removeBookButton';
-
-            removeBookButton.addEventListener('click', () => {
-                removeBook(bookId);
-            });
-
-            return removeBookButton;
-        }
-
-        // Function to create a book header
-        function createBookHeader(book) {
-            const bookHeader = document.createElement('div');
-            bookHeader.className = 'bookHeader';
-
-            // Create children elements
-            const bookCheckbox = createBookCheckbox(book.id);
-            const bookTitle = createBookTitle(book.title);
-            const editBookTitleButton = createEditBookTitleButton(book.id);
-            const restoreBookButton = createRestoreBookButton(book.id);
-            const removeBookButton = createRemoveBookButton(book.id);
-
-            // Append elements to the header container in the desired order
-            bookHeader.appendChild(bookCheckbox);
-            bookHeader.appendChild(bookTitle);
-            bookHeader.appendChild(editBookTitleButton);
-            bookHeader.appendChild(restoreBookButton);
-            bookHeader.appendChild(removeBookButton);
-
-            // Create functions to retrieve nested elements
-            bookHeader.getBookCheckbox = function() {return bookCheckbox;}
-            bookHeader.getBookTitle = function() {return bookTitle;}
-
-            // Add event listener
-            bookHeader.addEventListener('click', (event) => {
-                // Toggle book collapse/expand state
-                if ((event.target === bookHeader) || ((event.target === bookTitle) && (editBookTitleButton.dataset.mode === 'edit'))) {
-                    const bookId = book.id;
-
-                    // Find the book index
-                    const bookIndex = bookShelfData.findIndex(book => book.id === bookId);
-                    if (bookIndex === -1) return;
-
-                    // Get HTML elements
-                    const bookContainer = getBookElementById(bookId);
-                    const pagesList = bookContainer.getPagesList();
-                    const bookFooter = bookContainer.getBookFooter();
-
-                    // Toggle the display style
-                    if (bookShelfData[bookIndex].collapsed) {
-                        pagesList.style.display = 'grid';
-                        bookFooter.style.display = 'flex';
-                    } else {
-                        pagesList.style.display = 'none';
-                        bookFooter.style.display = 'none';
-                    }
-                    bookShelfData[bookIndex].collapsed ^= true;  // toggle value
-
-                    // Save the updated bookShelfData
-                    saveBookShelfDataToStorage();
-                }
-            });
-
-            return bookHeader;
-        }
-
-        // Function to create the page checkbox
-        function createPageCheckbox(bookId) {
-            const pageCheckbox = document.createElement('input');
-            pageCheckbox.type = 'checkbox';
-            pageCheckbox.className = 'pageCheckbox';
-
-            // Update the book checkbox state based on individual checkboxes
-            pageCheckbox.addEventListener('change', () => {
-                const bookContainer = getBookElementById(bookId);
-                const bookCheckbox = bookContainer.getBookCheckbox();
-                const pageCheckboxes = bookContainer.getAllPageCheckbox();
-
-                const allChecked = Array.from(pageCheckboxes).every(checkbox => checkbox.checked);
-                const anyChecked = Array.from(pageCheckboxes).some(checkbox => checkbox.checked);
-
-                bookCheckbox.checked = allChecked;
-                bookCheckbox.indeterminate = !allChecked && anyChecked;
-            });
-
-            return pageCheckbox;
-        }
-
-        // Function to create the page link
-        function createPageLink(page) {
-            const pageLink = document.createElement('a');
-            pageLink.className = 'pageLink';
-            pageLink.href = page.url;
-            pageLink.textContent = page.title;
-            pageLink.target = '_blank';
-
-            return pageLink;
-        }
-
-        // Function to create the remove page button
-        function createRemovePageButton(bookId, pageId) {
-            const removePageButton = document.createElement('button');
-            removePageButton.textContent = 'X';
-            removePageButton.title = 'Remove this page';
-            removePageButton.className = 'removePageButton';
-
-            removePageButton.addEventListener('click', () => {
-                // Find the book index
-                const bookIndex = bookShelfData.findIndex(book => book.id === bookId);
-                if (bookIndex === -1) return;
-
-                // Find the page index
-                const pageIndex = bookShelfData[bookIndex].pages.findIndex(page => page.id === pageId);
-                if (pageIndex === -1) return;
-
-                // Get HTML element
-                const pagesList = getBookElementById(bookId).getPagesList();
-
-                // Assert data compatibility
-                if (!(pagesList.getAllPagesListItem().length === bookShelfData[bookIndex].pages.length)) {
-                    console.assert(false, `Assert error when removing ${pageId} page in ${bookId} book`);
-                    return;
-                }
-
-                // Remove page
-                pagesList.removeChild(pagesList.children[pageIndex]);
-                bookShelfData[bookIndex].pages.splice(pageIndex, 1);
-
-                // Remove the book if no pages are left
-                if (bookShelfData[bookIndex].pages.length === 0) {
-                    removeBook(bookId);
-                    return;
-                }
-
-                // Update pages count
-                updatePageCount(bookId);
-
-                // Save the updated bookShelfData
-                saveBookShelfDataToStorage();
-            });
-
-            return removePageButton;
-        }
-
-        // Function to create a container for the page info and controls
-        function createPageContainer(page, bookId, pageId) {
-            const pageContainer = document.createElement('div');
-            pageContainer.className = 'pageContainer';
-            pageContainer.dataset.pageId = pageId;
-
-            // Create children elements
-            const pageCheckbox = createPageCheckbox(bookId);
-            const pageLink = createPageLink(page);
-            const removePageButton = createRemovePageButton(bookId, pageId);
-
-            // Append elements to the container in the desired order
-            pageContainer.appendChild(pageCheckbox);
-            pageContainer.appendChild(pageLink);
-            pageContainer.appendChild(removePageButton);
-
-            // Create functions to retrieve nested elements
-            pageContainer.getPageCheckbox = function() {return pageCheckbox;}
-
-            return pageContainer;
-        }
-
-        // Function to create the "Move here" button
-        function createMoveHereButton(bookId, pageId) {
-            const moveHereButton = document.createElement('button');
-            moveHereButton.textContent = 'Move here';
-            moveHereButton.className = 'moveHereButton';
-            moveHereButton.style.display = areThereAnyPagesToMove ? 'block' : 'none';
-
-            // Move buffered pages inside a book
-            moveHereButton.addEventListener('click', () => {
-                if ((pagesToMove.length === 0) || (bookShelfData.findIndex(book => book.id === bookIdOfMovingPages) === -1)) return;
-
-                // Find the book index
-                let bookIndex = bookShelfData.findIndex(book => book.id === bookId);
-                if (bookIndex === -1) return;
-
-                // Find the page index
-                let pageIndex = bookShelfData[bookIndex].pages.findIndex(page => page.id === pageId);
-                if (pageIndex < 0) pageIndex = bookShelfData[bookIndex].pages.length;
-
-                // Check if the pages we are moving have the same ID as those in the book
-                let bookIds = new Set();
-                let pageToAdd = JSON.parse(JSON.stringify(pagesToMove));  // Make a deep copy (NOTE: can be slow)
-                do {
-                    // Get book pages IDs
-                    bookIds = new Set(bookShelfData[bookIndex].pages.map(page => page.id));
-
-                    // Check for duplicated IDs
-                    pageToAdd.forEach(page => {
-                        if (bookIds.has(page.id)) {
-                            page.id = generateUUID();  // generate new ID
-                        }
-                    });
-                } while(pageToAdd.some(page => bookIds.has(page.id)));
-
-                // Add pages
-                bookShelfData[bookIndex].pages.splice(pageIndex, 0, ...pageToAdd);
-
-                // Remove pages from previous book
-                bookIndex = bookShelfData.findIndex(book => book.id === bookIdOfMovingPages);
-                bookIds = new Set(pagesToMove.map(page => page.id));
-                bookShelfData[bookIndex].pages = bookShelfData[bookIndex].pages.filter(page => !bookIds.has(page.id));
-
-                // Remove the book if no pages are left
-                if (bookShelfData[bookIndex].pages.length === 0) {
-                    removeBook(bookIdOfMovingPages);
-                }
-                else {
-                    // Update pages count
-                    updatePageCount(bookIdOfMovingPages);
-                }
-
-                // Update pages count
-                updatePageCount(bookId);
-
-                // Clear the array and the book ID
-                pagesToMove = [];
-                bookIdOfMovingPages = '';
-
-                // Save the updated bookShelfData
-                saveBookShelfDataToStorage();
-
-                // Repaint the DOM
-                displayBookShelf();
-            });
-
-            return moveHereButton;
-        }
-
-        // Function to create a page list item
-        function createPagesListItem(page, bookId, pageId) {
-            const pagesListItem = document.createElement('li');
-            pagesListItem.className = 'pagesListItem';
-            pagesListItem.style.display = page.title.toLowerCase().includes(currentSearchQuery) ? 'grid' : 'none';
-
-            // Create children elements
-            const moveHereButton = createMoveHereButton(bookId, pageId);
-            const pageContainer = createPageContainer(page, bookId, pageId);
-
-            // Append elements to the item in the desired order
-            pagesListItem.appendChild(moveHereButton);
-            pagesListItem.appendChild(pageContainer);
-
-            // Create functions to retrieve nested elements
-            pagesListItem.getPageCheckbox = function() {return pageContainer.getPageCheckbox();}
-
-            return pagesListItem;
-        }
-
-        // Function to create a pages list
-        function createPagesList(book) {
-            const pagesList = document.createElement('ul');
-            pagesList.className = 'pagesList';
-            pagesList.style.display = book.collapsed ? 'none' : 'grid';
-
-            // Append elements to the pages list in the desired order
-            book.pages.forEach((page) => {
-                pagesList.appendChild(createPagesListItem(page, book.id, page.id));
-            });
-
-            // Create functions to retrieve nested elements
-            pagesList.getAllPagesListItem = function() {return [...pagesList.children];}
-            pagesList.getAllPageCheckbox = function() {
-               const allPageCheckbox = [];
-               pagesList.getAllPagesListItem().forEach(item => {
-                   allPageCheckbox.push(item.getPageCheckbox());
-               });
-
-               return allPageCheckbox;
-            };
-
-            return pagesList;
+            return bookCheckbox;
         }
 
         // Function to create a move selected pages button
@@ -755,38 +491,292 @@ document.addEventListener('DOMContentLoaded', async () => {
             return removeSelectedPagesButton;
         }
 
-        // Function to create a pages count
-        function createPagesCount(bookPagesLength) {
-            const pagesCount = document.createElement('h2');
-            pagesCount.textContent = `${bookPagesLength} Page${bookPagesLength !== 1 ? 's' : ''}`;
-            pagesCount.className = 'pagesCount';
-
-            return pagesCount;
-        }
-
-        // Function to create a book footer
-        function createBookFooter(book) {
-            // Function to create a book footer
-            const bookFooter = document.createElement('div');
-            bookFooter.className = 'bookFooter';
-            bookFooter.style.display = book.collapsed ? 'none' : 'flex';
+        // Function to create the bottom part of a book header
+        function createBookHeaderBottom(bookId) {
+            const bookHeaderBottom = document.createElement('div');
+            bookHeaderBottom.className = 'bookHeaderBottom';
 
             // Create children elements
-            const moveSelectedPagesButton = createMoveSelectedPagesButton(book.id);
-            const restoreSelectedPagesButton = createRestoreSelectedPagesButton(book.id);
-            const removeSelectedPagesButton = createRemoveSelectedPagesButton(book.id);
-            const pagesCount = createPagesCount(book.pages.length);
+            const bookCheckbox = createBookCheckbox(bookId);
+            const moveSelectedPagesButton = createMoveSelectedPagesButton(bookId);
+            const restoreSelectedPagesButton = createRestoreSelectedPagesButton(bookId);
+            const removeSelectedPagesButton = createRemoveSelectedPagesButton(bookId);
 
-            // Append elements to the footer in the desired order
-            bookFooter.appendChild(moveSelectedPagesButton);
-            bookFooter.appendChild(restoreSelectedPagesButton);
-            bookFooter.appendChild(removeSelectedPagesButton);
-            bookFooter.appendChild(pagesCount);
+            // Append elements to the bottom header in the desired order
+            bookHeaderBottom.appendChild(bookCheckbox);
+            bookHeaderBottom.appendChild(moveSelectedPagesButton);
+            bookHeaderBottom.appendChild(restoreSelectedPagesButton);
+            bookHeaderBottom.appendChild(removeSelectedPagesButton);
 
             // Create functions to retrieve nested elements
-            bookFooter.getPagesCount = function() {return pagesCount;}
+            bookHeaderBottom.getBookCheckbox = function() {return bookCheckbox;}
 
-            return bookFooter;
+            return bookHeaderBottom;
+        }
+
+        // Function to create a book header
+        function createBookHeader(book) {
+            const bookHeader = document.createElement('div');
+            bookHeader.className = 'bookHeader';
+
+            // Create children elements
+            const bookHeaderTop = createBookHeaderTop(book);
+            const bookHeaderBottom = createBookHeaderBottom(book.id);
+
+            // Append elements to the header in the desired order
+            bookHeader.appendChild(bookHeaderTop);
+            bookHeader.appendChild(bookHeaderBottom);
+
+            // Create functions to retrieve nested elements
+            bookHeader.getBookTitle = function() {return bookHeaderTop.getBookTitle();}
+            bookHeader.getPagesCount = function() {return bookHeaderTop.getPagesCount();}
+            bookHeader.getBookCheckbox = function() {return bookHeaderBottom.getBookCheckbox();}
+
+            // Add event listener
+            bookHeader.addEventListener('click', (event) => {
+                // Toggle book collapse/expand state
+                if ((event.target === bookHeader) || (event.target === bookHeaderTop) || (event.target === bookHeaderBottom) || (event.target === bookHeaderTop.getPagesCount())
+                    || ((event.target === bookHeaderTop.getBookTitle()) && (bookHeaderTop.getEditBookTitleButton().dataset.mode === 'edit'))) {
+                    const bookId = book.id;
+
+                    // Find the book index
+                    const bookIndex = bookShelfData.findIndex(book => book.id === bookId);
+                    if (bookIndex === -1) return;
+
+                    // Get HTML elements
+                    const pagesList = getBookElementById(bookId).getPagesList();
+
+                    // Toggle the display style
+                    if (bookShelfData[bookIndex].collapsed) {
+                        pagesList.style.display = 'grid';
+                        bookHeaderBottom.style.display = 'flex';
+                        bookHeaderTop.style.marginBottom = '5px';
+                    } else {
+                        pagesList.style.display = 'none';
+                        bookHeaderBottom.style.display = 'none';
+                        bookHeaderTop.style.marginBottom = '0';
+                    }
+                    bookShelfData[bookIndex].collapsed ^= true;  // toggle value
+
+                    // Save the updated bookShelfData
+                    saveBookShelfDataToStorage();
+                }
+            });
+
+            return bookHeader;
+        }
+
+        // Function to create the page checkbox
+        function createPageCheckbox(bookId) {
+            const pageCheckbox = document.createElement('input');
+            pageCheckbox.type = 'checkbox';
+            pageCheckbox.className = 'pageCheckbox';
+
+            // Update the book checkbox state based on individual checkboxes
+            pageCheckbox.addEventListener('change', () => {
+                const bookContainer = getBookElementById(bookId);
+                const bookCheckbox = bookContainer.getBookCheckbox();
+                const pageCheckboxes = bookContainer.getAllPageCheckbox();
+
+                const allChecked = Array.from(pageCheckboxes).every(checkbox => checkbox.checked);
+                const anyChecked = Array.from(pageCheckboxes).some(checkbox => checkbox.checked);
+
+                bookCheckbox.checked = allChecked;
+                bookCheckbox.indeterminate = !allChecked && anyChecked;
+            });
+
+            return pageCheckbox;
+        }
+
+        // Function to create the page link
+        function createPageLink(page) {
+            const pageLink = document.createElement('a');
+            pageLink.className = 'pageLink';
+            pageLink.href = page.url;
+            pageLink.textContent = page.title;
+            pageLink.target = '_blank';
+
+            return pageLink;
+        }
+
+        // Function to create the remove page button
+        function createRemovePageButton(bookId, pageId) {
+            const removePageButton = document.createElement('button');
+            removePageButton.textContent = 'X';
+            removePageButton.title = 'Remove this page';
+            removePageButton.className = 'removePageButton';
+
+            removePageButton.addEventListener('click', () => {
+                // Find the book index
+                const bookIndex = bookShelfData.findIndex(book => book.id === bookId);
+                if (bookIndex === -1) return;
+
+                // Find the page index
+                const pageIndex = bookShelfData[bookIndex].pages.findIndex(page => page.id === pageId);
+                if (pageIndex === -1) return;
+
+                // Get HTML element
+                const pagesList = getBookElementById(bookId).getPagesList();
+
+                // Assert data compatibility
+                if (!(pagesList.getAllPagesListItem().length === bookShelfData[bookIndex].pages.length)) {
+                    console.assert(false, `Assert error when removing ${pageId} page in ${bookId} book`);
+                    return;
+                }
+
+                // Remove page
+                pagesList.removeChild(pagesList.children[pageIndex]);
+                bookShelfData[bookIndex].pages.splice(pageIndex, 1);
+
+                // Remove the book if no pages are left
+                if (bookShelfData[bookIndex].pages.length === 0) {
+                    removeBook(bookId);
+                    return;
+                }
+
+                // Update pages count
+                updatePageCount(bookId);
+
+                // Save the updated bookShelfData
+                saveBookShelfDataToStorage();
+            });
+
+            return removePageButton;
+        }
+
+        // Function to create a container for the page info and controls
+        function createPageContainer(page, bookId, pageId) {
+            const pageContainer = document.createElement('div');
+            pageContainer.className = 'pageContainer';
+            pageContainer.dataset.pageId = pageId;
+
+            // Create children elements
+            const pageCheckbox = createPageCheckbox(bookId);
+            const pageLink = createPageLink(page);
+            const removePageButton = createRemovePageButton(bookId, pageId);
+
+            // Append elements to the container in the desired order
+            pageContainer.appendChild(pageCheckbox);
+            pageContainer.appendChild(pageLink);
+            pageContainer.appendChild(removePageButton);
+
+            // Create functions to retrieve nested elements
+            pageContainer.getPageCheckbox = function() {return pageCheckbox;}
+
+            return pageContainer;
+        }
+
+        // Function to create the "Move here" button
+        function createMoveHereButton(bookId, pageId) {
+            const moveHereButton = document.createElement('button');
+            moveHereButton.textContent = 'Move here';
+            moveHereButton.className = 'moveHereButton';
+            moveHereButton.style.display = areThereAnyPagesToMove ? 'block' : 'none';
+
+            // Move buffered pages inside a book
+            moveHereButton.addEventListener('click', () => {
+                if ((pagesToMove.length === 0) || (bookShelfData.findIndex(book => book.id === bookIdOfMovingPages) === -1)) return;
+
+                // Find the book index
+                let bookIndex = bookShelfData.findIndex(book => book.id === bookId);
+                if (bookIndex === -1) return;
+
+                // Find the page index
+                let pageIndex = bookShelfData[bookIndex].pages.findIndex(page => page.id === pageId);
+                if (pageIndex < 0) pageIndex = bookShelfData[bookIndex].pages.length;
+
+                // Check if the pages we are moving have the same ID as those in the book
+                let bookIds = new Set();
+                let pageToAdd = JSON.parse(JSON.stringify(pagesToMove));  // Make a deep copy (NOTE: can be slow)
+                do {
+                    // Get book pages IDs
+                    bookIds = new Set(bookShelfData[bookIndex].pages.map(page => page.id));
+
+                    // Check for duplicated IDs
+                    pageToAdd.forEach(page => {
+                        if (bookIds.has(page.id)) {
+                            page.id = generateUUID();  // generate new ID
+                        }
+                    });
+                } while(pageToAdd.some(page => bookIds.has(page.id)));
+
+                // Add pages
+                bookShelfData[bookIndex].pages.splice(pageIndex, 0, ...pageToAdd);
+
+                // Remove pages from previous book
+                bookIndex = bookShelfData.findIndex(book => book.id === bookIdOfMovingPages);
+                bookIds = new Set(pagesToMove.map(page => page.id));
+                bookShelfData[bookIndex].pages = bookShelfData[bookIndex].pages.filter(page => !bookIds.has(page.id));
+
+                if (bookShelfData[bookIndex].pages.length === 0) {
+                    // Remove the book because no pages are left
+                    removeBook(bookIdOfMovingPages);
+                }
+                else {
+                    // Update pages count
+                    updatePageCount(bookIdOfMovingPages);
+                }
+
+                // Update pages count
+                updatePageCount(bookId);
+
+                // Clear the array and the book ID
+                pagesToMove = [];
+                bookIdOfMovingPages = '';
+
+                // Save the updated bookShelfData
+                saveBookShelfDataToStorage();
+
+                // Repaint the DOM
+                displayBookShelf();
+            });
+
+            return moveHereButton;
+        }
+
+        // Function to create a page list item
+        function createPagesListItem(page, bookId, pageId) {
+            const pagesListItem = document.createElement('li');
+            pagesListItem.className = 'pagesListItem';
+            pagesListItem.style.display = page.title.toLowerCase().includes(currentSearchQuery) ? 'grid' : 'none';
+
+            // Create children elements
+            const moveHereButton = createMoveHereButton(bookId, pageId);
+            const pageContainer = createPageContainer(page, bookId, pageId);
+
+            // Append elements to the item in the desired order
+            pagesListItem.appendChild(moveHereButton);
+            pagesListItem.appendChild(pageContainer);
+
+            // Create functions to retrieve nested elements
+            pagesListItem.getPageCheckbox = function() {return pageContainer.getPageCheckbox();}
+
+            return pagesListItem;
+        }
+
+        // Function to create a pages list
+        function createPagesList(book) {
+            const pagesList = document.createElement('ul');
+            pagesList.className = 'pagesList';
+            pagesList.style.display = book.collapsed ? 'none' : 'grid';
+
+            // Append elements to the pages list in the desired order
+            book.pages.forEach((page) => {
+                pagesList.appendChild(createPagesListItem(page, book.id, page.id));
+            });
+
+            // Create functions to retrieve nested elements
+            pagesList.getAllPagesListItem = function() {return [...pagesList.children];}
+            pagesList.getAllPageCheckbox = function() {
+               const allPageCheckbox = [];
+               pagesList.getAllPagesListItem().forEach(item => {
+                   allPageCheckbox.push(item.getPageCheckbox());
+               });
+
+               return allPageCheckbox;
+            };
+
+            return pagesList;
         }
 
         // Function to create a container for the book info and controls
@@ -799,22 +789,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const bookHeader = createBookHeader(book);
             const pagesList = createPagesList(book);
             const moveHereButton = createMoveHereButton(book.id, '');
-            const bookFooter = createBookFooter(book);
 
             // Append elements to the container in the desired order
             bookContainer.appendChild(bookHeader);
             bookContainer.appendChild(pagesList);
             bookContainer.appendChild(moveHereButton);
-            bookContainer.appendChild(bookFooter);
 
             // Create functions to retrieve nested elements
-            bookContainer.getBookCheckbox = function() {return bookHeader.getBookCheckbox();}
             bookContainer.getBookTitle = function() {return bookHeader.getBookTitle();}
+            bookContainer.getPagesCount = function() {return bookHeader.getPagesCount();}
+            bookContainer.getBookCheckbox = function() {return bookHeader.getBookCheckbox();}
             bookContainer.getPagesList = function() {return pagesList;}
             bookContainer.getAllPageCheckbox = function() {return pagesList.getAllPageCheckbox();}
             bookContainer.getAllPagesListItem = function() {return pagesList.getAllPagesListItem();}
-            bookContainer.getBookFooter = function() {return bookFooter;}
-            bookContainer.getPagesCount = function() {return bookFooter.getPagesCount();}
 
             // Show or hide the book based on whether any pages are visible
             bookContainer.style.display = Object.values(bookContainer.getAllPagesListItem()).some(item => item.style.display === 'grid') ? 'grid': 'none';
