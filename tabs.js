@@ -5,17 +5,18 @@ function generateUUID() {
 
 // Event listener for the DOM loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    const homePageLink = document.getElementById('homePageLink');
     const searchBar = document.getElementById('searchBar');
     const themeSelector = document.getElementById('themeSelector');
     const settingsPageButton = document.getElementById('settingsPageButton');
-    const mainPage = document.getElementById('mainPage');
+    const settingsOverlay = document.getElementById('settingsOverlay');
     const settingsPage = document.getElementById('settingsPage');
+    const closeSettingsButton = document.getElementById('closeSettingsButton');
     let bookShelfData = [];
     let bookShelfDataUpdated = false;
     let loadingBookShelfData = false;
     let pagesToMove = [];
     let bookIdOfMovingPages = '';
+    let isSettingsPageOpen = false;
 
     // Get saved theme
     chrome.storage.local.get('themeSelected', (data) => {
@@ -55,18 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Event listener for the homepage link
-    homePageLink.addEventListener('click', (event) => {
-        event.preventDefault(); // Prevent default link behavior
-
-        // Show the search bar
-        searchBar.style.display = 'block';
-
-        // Show main page and hide settings page
-        mainPage.style.display = 'block';
-        settingsPage.style.display = 'none';
-    });
-
     // Event listener for the search bar
     searchBar.addEventListener('input', () => {
         // TODO: disable or enable (by settings) to move pages when filtering
@@ -90,12 +79,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     settingsPageButton.addEventListener('click', (event) => {
         event.preventDefault(); // Prevent default link behavior
 
-        // Hide the search bar
-        searchBar.style.display = 'none';
+        isSettingsPageOpen = !isSettingsPageOpen;
 
-        // Hide main page and show settings page
-        mainPage.style.display = 'none';
-        settingsPage.style.display = 'block';
+        if (isSettingsPageOpen) {
+            // Open the settings page
+            settingsPage.classList.add('open');
+            settingsOverlay.classList.add('open');
+        } else {
+            // Close the settings page
+            settingsPage.classList.remove('open');
+            settingsOverlay.classList.remove('open');
+        }
+    });
+
+    // Event listener for the overlay to close the settings page when clicked
+    settingsOverlay.addEventListener('click', () => {
+        isSettingsPageOpen = false;
+        settingsPage.classList.remove('open');
+        settingsOverlay.classList.remove('open');
+    });
+
+    // Event listener for the close button inside the settings page
+    closeSettingsButton.addEventListener('click', () => {
+        isSettingsPageOpen = false;
+        settingsPage.classList.remove('open');
+        settingsOverlay.classList.remove('open');
+    });
+
+    // Close the settings page when the Escape key is pressed
+    document.addEventListener('keydown', (event) => {
+        if ((event.key === 'Escape') && isSettingsPageOpen) {
+            isSettingsPageOpen = false;
+            settingsPage.classList.remove('open');
+            settingsOverlay.classList.remove('open');
+        }
     });
 
     // Function to get bookshelf saved data from storage

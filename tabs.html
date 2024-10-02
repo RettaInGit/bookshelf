@@ -7,7 +7,7 @@
 </head>
 <body>
     <!-- Main Header -->
-    <header id="mainHeader">
+    <header id="mainHeader" style="z-index: 100">
         <div id="mainHeaderLeft">
             <a href="#" id="homePageLink">Bookshelf</a>
         </div>
@@ -38,8 +38,12 @@
             <div id="bookShelf"></div>
         </div>
 
+        <!-- Settings Overlay -->
+        <div id="settingsOverlay" style="z-index: 101"></div>
+
         <!-- Settings Page -->
-        <div id="settingsPage" style="display: none;">
+        <div id="settingsPage" style="z-index: 102">
+            <button id="closeSettingsButton" title="Close Settings">X</button>
             <h2>Settings</h2>
             <p>Customize your Bookshelf settings here.</p>
         </div>
