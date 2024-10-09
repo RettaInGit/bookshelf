@@ -93,7 +93,7 @@ function saveAllPagesExceptThis(currentTab) {
 }
 
 // Generic function to save pages
-function savePages(tabs) {
+async function savePages(tabs) {
   // Check if there are any pages to save
   if (tabs.length === 0) {
     console.log('No pages to save');
@@ -108,39 +108,65 @@ function savePages(tabs) {
   }));
 
   // Retrieve bookshelf saved data to determine the default book title and save it
-  chrome.storage.local.get('bookShelfData', (data) => {
-    let bookShelfData = data.bookShelfData || [];
+  let bookShelfData;
+  let selectedShelfId;
+  const data = await chrome.storage.local.get(['selectedShelfId', 'bookShelfData']);
+  if (!data.bookShelfData) {
+    bookShelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
+    selectedShelfId = bookShelfData[0].id;
+  }
+  else {
+    bookShelfData = data.bookShelfData;
+    selectedShelfId = data.selectedShelfId || bookShelfData[0].id;
+  }
 
-    // Generate default book title as 'Book X'
-    let booksTot = bookShelfData.length + 1;
-    let defaultBookTitle = 'Book ' + booksTot;
-
-    // Ensure the book title is unique (deprecated)
-    /*
-    while (bookShelfData.some(book => book.title === defaultBookTitle)) {
-      booksTot++;
-      defaultBookTitle = 'Book ' + booksTot;
+  // Find the shelf
+  let shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+  if (!shelf) {
+    if (!confirm("Cannot save data in current shelf. Create new shelf?")) {
+      return
     }
-    */
 
-    // Add the new book to the beginning of the array
-    const newBook = {
+    const newShelf = {
       id: generateUUID(),
-      title: defaultBookTitle,
-      pages: newPages,
-      collapsed: false
-    };
-    bookShelfData.unshift(newBook);
+      title: `Shelf ${bookShelfData.length + 1}`,
+      books: []
+    }
+    selectedShelfId = newShelf.id;
+    bookShelfData.push(newShelf);  // Add the new shelf at the end of the array
 
-    // Save the updated bookshelf data to storage
-    chrome.storage.local.set({ 'bookShelfData': bookShelfData }, () => {
-      console.log(`${newPages.length} page(s) saved under "${defaultBookTitle}"`);
+    shelf = newShelf;
+  };
 
-      // Close the saved tabs
-      chrome.tabs.remove(tabs.map(tab => tab.id));
+  // Generate default book title as 'Book X'
+  let booksTot = shelf.books.length + 1;
+  let defaultBookTitle = 'Book ' + booksTot;
 
-      // Send a message to tabs.html to refresh the bookshelf
-      chrome.runtime.sendMessage({ action: 'bookShelfUpdated' });
-    });
+  // Ensure the book title is unique (deprecated)
+  /*
+  while (shelf.books.some(book => book.title === defaultBookTitle)) {
+    booksTot++;
+    defaultBookTitle = 'Book ' + booksTot;
+  }
+  */
+
+  // Add the new book at the beginning of the array
+  const newBook = {
+    id: generateUUID(),
+    title: defaultBookTitle,
+    pages: newPages,
+    collapsed: false
+  };
+  shelf.books.unshift(newBook);
+
+  // Save the updated bookshelf data to storage
+  chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookShelfData': bookShelfData }, () => {
+    console.log(`${newPages.length} page(s) saved under "${defaultBookTitle}"`);
+
+    // Close the saved tabs
+    chrome.tabs.remove(tabs.map(tab => tab.id));
+
+    // Send a message to tabs.html to refresh the bookshelf
+    chrome.runtime.sendMessage({ action: 'bookShelfUpdated' });
   });
 }

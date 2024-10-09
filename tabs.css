@@ -179,8 +179,8 @@ body {
 }
 
 h2 {
-    font-family: 'Lora', serif;
     color: var(--color-text-secondary);
+    margin: 0;
 }
 
 button {
@@ -245,14 +245,104 @@ svg path {
     justify-content: flex-end;
 }
 
-#homePageLink {
+#selectedShelfTitle {
     font-size: 28px;
     font-weight: 700;
     text-decoration: none;
     color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
-#homePageLink:hover {
+#selectedShelfTitle:hover {
+    text-decoration: underline;
+}
+
+#arrowIcon {
+    transition: transform 0.3s;
+    margin-right: 5px;
+}
+
+#shelfList {
+    display: block;
+    position: fixed;
+    top: 80px; /* mainHeader.height + mainHeader.paddingTop + mainHeader.paddingBottom */
+    left: 0;
+    width: 420px;
+    background-color: var(--color-header-bg);
+    border: 1px solid var(--color-border-header);
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 10px;
+    box-shadow: 0 2px 4px var(--color-shadow);
+    transition: left 0.3s ease;
+    overflow: hidden;
+}
+
+#shelfList.close {
+    left: -440px;
+}
+
+.editShelfTitleButton {
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
+    border: none;
+    padding: 0;
+    margin: 0 5px 0 0;
+}
+
+.editShelfTitleButton:hover {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.shelfTitle {
+    font-family: 'Lora', serif;
+    font-size: 20px;
+    text-decoration: none;
+    flex-grow: 1;
+    padding: 0;
+}
+
+.shelfTitle[contenteditable="false"]:hover {
+    text-decoration: underline;
+}
+
+.shelfTitle[contenteditable="true"] {
+    outline: 2px solid var(--color-button-primary);
+    background-color: var(--color-background);
+    border-radius: 4px;
+}
+
+.deleteShelfButton {
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
+    border: none;
+    padding: 0;
+    margin: 0 0 0 5px;
+}
+
+.deleteShelfButton:hover {
+    background-color: transparent;
+    opacity: 0.8;
+}
+
+.shelfListItem, .addNewShelfButton {
+    display: flex;
+    align-items: center;
+    color: var(--color-text-secondary);
+    font-size: 16px;
+    border-radius: 4px;
+    background-color: var(--color-page-bg);
+    padding: 5px;
+    margin: 5px 0;
+    cursor: pointer;
+}
+
+.addNewShelfButton:hover {
     text-decoration: underline;
 }
 
@@ -469,9 +559,9 @@ svg path {
     margin-right: 10px;
 }
 
-.bookTitle, .pagesCount {
+.bookTitle {
+    font-family: 'Lora', serif;
     flex-grow: 1;
-    margin: 0;
     padding: 0;
 }
 
@@ -482,10 +572,10 @@ svg path {
 }
 
 .pagesCount {
-    display: flex;
-    justify-content: flex-end;
-    margin-right: 5px;
+    font-family: 'Lora', serif;
     color: var(--color-text-accent);
+    margin: 0 5px 0 15px;
+    padding: 0;
 }
 
 .moveSelectedPagesButton {
