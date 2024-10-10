@@ -127,13 +127,22 @@ async function savePages(tabs) {
       return
     }
 
+    // Create new shelf ID
+    let newShelfId;
+    do {
+        newShelfId = generateUUID();
+    } while(bookShelfData.some(shelf => shelf.id === newShelfId));
+
+    // Create new shelf
     const newShelf = {
-      id: generateUUID(),
+      id: newShelfId,
       title: `Shelf ${bookShelfData.length + 1}`,
       books: []
     }
+
+    // Save new shelf and add it at the end of the array
     selectedShelfId = newShelf.id;
-    bookShelfData.push(newShelf);  // Add the new shelf at the end of the array
+    bookShelfData.push(newShelf);
 
     shelf = newShelf;
   };
@@ -150,9 +159,15 @@ async function savePages(tabs) {
   }
   */
 
+  // Create new book ID
+  let newBookId;
+  do {
+    newBookId = generateUUID();
+  } while(shelf.books.some(book => book.id === newBookId));
+
   // Add the new book at the beginning of the array
   const newBook = {
-    id: generateUUID(),
+    id: newBookId,
     title: defaultBookTitle,
     pages: newPages,
     collapsed: false

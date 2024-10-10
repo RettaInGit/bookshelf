@@ -411,9 +411,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Add new shelf
             addNewShelfButton.addEventListener('click', () => {
+                // Create new shelf ID
+                let newShelfId;
+                do {
+                    newShelfId = generateUUID();
+                } while(bookShelfData.some(shelf => shelf.id === newShelfId));
+
                 // Create new shelf
                 const newShelf = {
-                    id: generateUUID(),
+                    id: newShelfId,
                     title: `Shelf ${bookShelfData.length + 1}`,
                     books: []
                 }
@@ -1004,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (pageIndex < 0) pageIndex = book.pages.length;
 
                 // Check if the pages we are moving have the same ID as those in the book
-                let bookIds = new Set();
+                let bookIds;
                 let pageToAdd = JSON.parse(JSON.stringify(pagesToMove));  // Make a deep copy (NOTE: can be slow)
                 do {
                     // Get book pages IDs
