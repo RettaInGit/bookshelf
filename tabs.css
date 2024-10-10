@@ -316,7 +316,7 @@ svg path {
     border-radius: 4px;
 }
 
-.deleteShelfButton {
+.removeShelfButton {
     background-color: transparent;
     width: 20px;
     height: 20px;
@@ -325,7 +325,7 @@ svg path {
     margin: 0 0 0 5px;
 }
 
-.deleteShelfButton:hover {
+.removeShelfButton:hover {
     background-color: transparent;
     opacity: 0.8;
 }

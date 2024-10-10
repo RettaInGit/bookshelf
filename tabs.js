@@ -310,11 +310,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             return shelfTitleElem;
         }
 
-        // Function to create the shelf delete button
-        function createDeleteShelfButton(shelfId) {
-            const deleteShelfButton = document.createElement('button');
-            deleteShelfButton.title = 'Delete this shelf';
-            deleteShelfButton.className = 'deleteShelfButton';
+        // Function to create the remove shelf button
+        function createRemoveShelfButton(shelfId) {
+            const removeShelfButton = document.createElement('button');
+            removeShelfButton.title = 'Remove this shelf';
+            removeShelfButton.className = 'removeShelfButton';
 
             // Create SVG element
             const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -326,15 +326,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Append elements in the correct order
             svgElem.appendChild(pathElem);
-            deleteShelfButton.appendChild(svgElem);
+            removeShelfButton.appendChild(svgElem);
 
-            // Delete shelf
-            deleteShelfButton.addEventListener('click', () => {
+            // Remove shelf
+            removeShelfButton.addEventListener('click', () => {
                 if (bookShelfData.length > 1) {
                     if (shelfId === selectedShelfId) {
-                        alert('Please choose another shelf before deleting this.');
+                        alert('Please choose another shelf before removing this.');
                     }
-                    else if (confirm('Are you sure you want to delete this shelf?')) {
+                    else if (confirm('Are you sure you want to remove this shelf?')) {
                         // Remove shelf from data and save it
                         bookShelfData = bookShelfData.filter(shelf => shelf.id !== shelfId);
                         saveBookShelfDataToStorage();
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            return deleteShelfButton;
+            return removeShelfButton;
         }
 
         // Function to create the shelf list item
@@ -376,12 +376,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Create children elements
             const editShelfTitleButton = createEditShelfTitleButton(shelf.id);
             const shelfTitle = createShelfTitle(shelf.id, shelf.title);
-            const deleteShelfButton = createDeleteShelfButton(shelf.id);
+            const removeShelfButton = createRemoveShelfButton(shelf.id);
 
             // Append elements to the shelf list item in the desired order
             shelfListItem.appendChild(editShelfTitleButton);
             shelfListItem.appendChild(shelfTitle);
-            shelfListItem.appendChild(deleteShelfButton);
+            shelfListItem.appendChild(removeShelfButton);
 
             // Create functions to retrieve nested elements
             shelfListItem.getShelfTitle = function() {return shelfTitle;}
@@ -941,6 +941,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Assert data compatibility
                 if (!(pagesList.getAllPagesListItem().length === book.pages.length)) {
                     console.assert(false, `Assert error when removing ${pageId} page in ${bookId} book`);
+                    return;
+                }
+
+                // Confirm to remove the pages
+                if (!confirm('Are you sure you want to remove this page?')) {
                     return;
                 }
 
