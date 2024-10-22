@@ -369,8 +369,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Save updated shelf
                     saveBookShelfDataToStorage();
 
-                    // Repaint the DOM
-                    displayBookShelf();
+                    // Clear existing content and append the fragment to display the data
+                    const bookShelf = document.getElementById('bookShelf');
+                    bookShelf.innerHTML = '';
+
+                    // Display the message that there are no page saved
+                    displayResultMessage();
                 }
             });
 
