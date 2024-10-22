@@ -78,14 +78,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listener for the search bar
     searchBar.addEventListener('input', () => {
-        // TODO: disable or enable (by settings) to move pages when filtering
-        //    if (!settings.canMoveWhileFiltering) {
-        //        pagesToMove = [];
-        //        bookIdOfMovingPages = '';
-        //    }
+        let timeoutId;
 
-        // Repaint the DOM
-        displayBookShelf();
+        // Clear the previous timer
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        // Set a new timer
+        timeoutId = setTimeout(() => {
+            // TODO: disable or enable (by settings) to move pages when filtering
+            //    if (!settings.canMoveWhileFiltering) {
+            //        pagesToMove = [];
+            //        bookIdOfMovingPages = '';
+            //    }
+
+            // Repaint the DOM
+            displayBookShelf();
+        }, 250);
     });
 
     // Event listener for the theme selector button
@@ -406,7 +416,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Append elements in the correct order
             svgElem.appendChild(pathElem);
             addNewShelfButton.appendChild(svgElem);
-
             addNewShelfButton.innerHTML += "Add new shelf";
 
             // Add new shelf
@@ -572,6 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const bookCheckbox = document.createElement('input');
             bookCheckbox.type = 'checkbox';
             bookCheckbox.className = 'bookCheckbox';
+            bookCheckbox.name = 'bookCheckbox';
             bookCheckbox.title = 'Select/Deselect All Pages in this Book';
 
             // Toggle all checkboxes in a book
@@ -887,6 +897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pageCheckbox = document.createElement('input');
             pageCheckbox.type = 'checkbox';
             pageCheckbox.className = 'pageCheckbox';
+            pageCheckbox.name = 'pageCheckbox';
 
             // Update the book checkbox state based on individual checkboxes
             pageCheckbox.addEventListener('change', () => {

@@ -402,13 +402,17 @@ svg path {
 }
 
 #mainBody {
-    max-width: 1000px;
-    margin: 90px auto 20px;
+    margin-top: 90px;
     padding: 20px;
+    padding-bottom: 0;
 }
 
 #mainPage {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 #settingsOverlay {
@@ -459,6 +463,8 @@ svg path {
 
 #bookShelf {
     display: grid;
+    width: 100%;
+    max-width: 1000px;
 }
 
 .pagesList {

@@ -123,10 +123,6 @@ async function savePages(tabs) {
   // Find the shelf
   let shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
   if (!shelf) {
-    if (!confirm("Cannot save data in current shelf. Create new shelf?")) {
-      return
-    }
-
     // Create new shelf ID
     let newShelfId;
     do {
@@ -145,25 +141,16 @@ async function savePages(tabs) {
     bookShelfData.push(newShelf);
 
     shelf = newShelf;
-  };
-
-  // Generate default book title as 'Book X'
-  let booksTot = shelf.books.length + 1;
-  let defaultBookTitle = 'Book ' + booksTot;
-
-  // Ensure the book title is unique (deprecated)
-  /*
-  while (shelf.books.some(book => book.title === defaultBookTitle)) {
-    booksTot++;
-    defaultBookTitle = 'Book ' + booksTot;
   }
-  */
 
   // Create new book ID
   let newBookId;
   do {
     newBookId = generateUUID();
   } while(shelf.books.some(book => book.id === newBookId));
+
+  // Create default book title as 'Book X'
+  let defaultBookTitle = `Book ${shelf.books.length + 1}`;
 
   // Add the new book at the beginning of the array
   const newBook = {
