@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selectedShelfTitle = document.getElementById('selectedShelfTitle');
     const shelfList = document.getElementById('shelfList');
     const searchBar = document.getElementById('searchBar');
-    const themeSelector = document.getElementById('themeSelector');
+    const themeToggleButton = document.getElementById('themeToggleButton');
     const settingsPageButton = document.getElementById('settingsPageButton');
     const settingsOverlay = document.getElementById('settingsOverlay');
     const settingsPage = document.getElementById('settingsPage');
@@ -35,11 +35,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Get saved theme
     chrome.storage.local.get('themeSelected', (data) => {
-        if (!data.themeSelected) data.themeSelected = '';
+        const currentTheme = data.themeSelected || 'light';
 
-        document.body.className = data.themeSelected;
-
-        themeSelector.value = data.themeSelected;  // Change select based on saved theme
+        if (currentTheme === 'dark') {
+            document.body.classList.add('darkTheme');
+            document.getElementById('sunIcon').style.visibility = "hidden";
+            document.getElementById('moonIcon').style.visibility = "visible";
+        } else {
+            document.body.classList.remove('darkTheme');
+            document.getElementById('sunIcon').style.visibility = "visible";
+            document.getElementById('moonIcon').style.visibility = "hidden";
+        }
     });
 
     // Create a timer that check if there are bookshelf data to save
@@ -98,11 +104,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 250);
     });
 
-    // Event listener for the theme selector button
-    themeSelector.addEventListener('change', function() {
-        document.body.className = this.value;
+    // Handle Theme Toggle Button Click
+    themeToggleButton.addEventListener('click', () => {
+        chrome.storage.local.get('themeSelected', (data) => {
+            let currentTheme = data.themeSelected || 'light';
 
-        chrome.storage.local.set({ 'themeSelected': this.value });  // Save theme
+            if (currentTheme === 'light') {  // Switch to dark
+                document.body.classList.add('darkTheme');
+                chrome.storage.local.set({ 'themeSelected': 'dark' });
+                document.getElementById('sunIcon').style.visibility = "hidden";
+                document.getElementById('moonIcon').style.visibility = "visible";
+            } else {  // Switch to light
+                document.body.classList.remove('darkTheme');
+                chrome.storage.local.set({ 'themeSelected': 'light' });
+                document.getElementById('sunIcon').style.visibility = "visible";
+                document.getElementById('moonIcon').style.visibility = "hidden";
+            }
+        });
     });
 
     // Event listener for the settings page button
@@ -926,6 +944,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageLink.href = page.url;
             pageLink.textContent = page.title;
             pageLink.target = '_blank';
+            pageLink.title = page.url;
 
             return pageLink;
         }
