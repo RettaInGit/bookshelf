@@ -7,6 +7,7 @@ function generateUUID() {
 document.addEventListener('DOMContentLoaded', async () => {
     const selectedShelfTitle = document.getElementById('selectedShelfTitle');
     const shelfList = document.getElementById('shelfList');
+    const addNewShelfButton = document.getElementById('addNewShelfButton');
     const searchBar = document.getElementById('searchBar');
     const themeToggleButton = document.getElementById('themeToggleButton');
     const settingsPageButton = document.getElementById('settingsPageButton');
@@ -77,9 +78,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle click event for the extension name to show/hide the shelf dropdown
     selectedShelfTitle.addEventListener('click', () => {
         const arrowIcon = document.getElementById('arrowIcon');
+        const shelfContainer = document.getElementById('shelfContainer');
 
-        shelfList.classList.toggle('close');
-        arrowIcon.style.transform = shelfList.classList.contains('close') ? 'rotate(0deg)' : 'rotate(180deg)';
+        shelfContainer.classList.toggle('close');
+        arrowIcon.style.transform = shelfContainer.classList.contains('close') ? 'rotate(0deg)' : 'rotate(180deg)';
+    });
+
+    // Event listener for the add new shelf button
+    addNewShelfButton.addEventListener('click', () => {
+        // Create new shelf ID
+        let newShelfId;
+        do {
+            newShelfId = generateUUID();
+        } while(bookShelfData.some(shelf => shelf.id === newShelfId));
+
+        // Create new shelf
+        const newShelf = {
+            id: newShelfId,
+            title: `Shelf ${bookShelfData.length + 1}`,
+            books: []
+        }
+        bookShelfData.push(newShelf);  // Add the new shelf at the end of the array
+
+        // Save the new shelf to storage
+        saveBookShelfDataToStorage();
+
+        // Insert shelf in the list
+        shelfList.appendShelfListItem(newShelf);
     });
 
     // Event listener for the search bar
@@ -104,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 250);
     });
 
-    // Handle Theme Toggle Button Click
+    // Event listener for the theme toggle button
     themeToggleButton.addEventListener('click', () => {
         chrome.storage.local.get('themeSelected', (data) => {
             let currentTheme = data.themeSelected || 'light';
@@ -338,6 +363,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             return shelfTitleElem;
         }
 
+        // Function to create the move shelf handler
+        function createMoveShelfHandler() {
+            const moveShelfHandler = document.createElement('button');
+            moveShelfHandler.title = 'Move this shelf';
+            moveShelfHandler.className ='moveShelfHandler';
+
+            // Create SVG element
+            const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgElem.setAttribute('viewBox', '0 -0.125 0.8 0.8');
+            svgElem.setAttribute('width', '20px');
+            svgElem.setAttribute('height', '20px');
+            const pathElem = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElem.setAttribute('d', 'M.75.45a.05.05 0 0 1 0 .1h-.7a.05.05 0 0 1 0-.1zm0-.225a.05.05 0 0 1 0 .1h-.7a.05.05 0 0 1 0-.1zM.75 0a.05.05 0 0 1 0 .1h-.7a.05.05 0 0 1 0-.1z');
+
+            // Append elements in the correct order
+            svgElem.appendChild(pathElem);
+            moveShelfHandler.appendChild(svgElem);
+
+            return moveShelfHandler;
+        }
+
         // Function to create the remove shelf button
         function createRemoveShelfButton(shelfId) {
             const removeShelfButton = document.createElement('button');
@@ -408,62 +454,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Create children elements
             const editShelfTitleButton = createEditShelfTitleButton(shelf.id);
             const shelfTitle = createShelfTitle(shelf.id, shelf.title);
+            const moveShelfHandler = createMoveShelfHandler();
             const removeShelfButton = createRemoveShelfButton(shelf.id);
 
             // Append elements to the shelf list item in the desired order
             shelfListItem.appendChild(editShelfTitleButton);
             shelfListItem.appendChild(shelfTitle);
+            shelfListItem.appendChild(moveShelfHandler);
             shelfListItem.appendChild(removeShelfButton);
 
             // Create functions to retrieve nested elements
             shelfListItem.getShelfTitle = function() {return shelfTitle;}
 
             return shelfListItem;
-        }
-
-        // Function to create the add new shelf button
-        function createAddNewShelfButton() {
-            const addNewShelfButton = document.createElement('li');
-            addNewShelfButton.classList.add('addNewShelfButton');
-
-            // Create SVG element
-            const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svgElem.setAttribute('viewBox', '0 0 48 48');
-            svgElem.setAttribute('width', '20px');
-            svgElem.setAttribute('height', '20px');
-            svgElem.style.marginRight = '5px';
-            const pathElem = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            pathElem.setAttribute('d', 'M 24 4 C 12.972066 4 4 12.972074 4 24 C 4 35.027926 12.972066 44 24 44 C 35.027934 44 44 35.027926 44 24 C 44 12.972074 35.027934 4 24 4 z M 24 7 C 33.406615 7 41 14.593391 41 24 C 41 33.406609 33.406615 41 24 41 C 14.593385 41 7 33.406609 7 24 C 7 14.593391 14.593385 7 24 7 z M 23.976562 13.978516 A 1.50015 1.50015 0 0 0 22.5 15.5 L 22.5 22.5 L 15.5 22.5 A 1.50015 1.50015 0 1 0 15.5 25.5 L 22.5 25.5 L 22.5 32.5 A 1.50015 1.50015 0 1 0 25.5 32.5 L 25.5 25.5 L 32.5 25.5 A 1.50015 1.50015 0 1 0 32.5 22.5 L 25.5 22.5 L 25.5 15.5 A 1.50015 1.50015 0 0 0 23.976562 13.978516 z');
-
-            // Append elements in the correct order
-            svgElem.appendChild(pathElem);
-            addNewShelfButton.appendChild(svgElem);
-            addNewShelfButton.innerHTML += "Add new shelf";
-
-            // Add new shelf
-            addNewShelfButton.addEventListener('click', () => {
-                // Create new shelf ID
-                let newShelfId;
-                do {
-                    newShelfId = generateUUID();
-                } while(bookShelfData.some(shelf => shelf.id === newShelfId));
-
-                // Create new shelf
-                const newShelf = {
-                    id: newShelfId,
-                    title: `Shelf ${bookShelfData.length + 1}`,
-                    books: []
-                }
-                bookShelfData.push(newShelf);  // Add the new shelf at the end of the array
-
-                // Save the new shelf to storage
-                saveBookShelfDataToStorage();
-
-                // Insert in the list
-                shelfList.insertBefore(createShelfListItem(newShelf), addNewShelfButton);
-            });
-
-            return addNewShelfButton;
         }
 
         // Function to create the edit book title button
@@ -1174,8 +1177,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             return bookContainer;
         }
 
+        // Create a function to append new shelves to the shelf list
+        shelfList.appendShelfListItem = function(shelf) {shelfList.appendChild(createShelfListItem(shelf));}
+
         // Create the elements based on the data
         shelfList.innerHTML = '';
+        Sortable.create(shelfList, {
+            handle: '.moveShelfHandler',
+            animation: 150,
+            onEnd: function(data) {
+                if( (data.oldIndex >= bookShelfData.length) || (data.newIndex >= bookShelfData.length) ) return;
+
+                // Move shelf in the new position
+                bookShelfData.splice(data.newIndex, 0, bookShelfData.splice(data.oldIndex, 1)[0]);
+
+                // Save the updated bookShelfData
+                saveBookShelfDataToStorage();
+            },
+        });
         bookShelfData.forEach((shelf) => {
             shelfList.appendChild(createShelfListItem(shelf));
 
@@ -1185,7 +1204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         });
-        shelfList.appendChild(createAddNewShelfButton());
 
         // Clear existing content and append the fragment to display the data
         const bookShelf = document.getElementById('bookShelf');

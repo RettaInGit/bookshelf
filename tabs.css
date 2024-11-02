@@ -162,8 +162,8 @@ svg path {
     margin-right: 5px;
 }
 
-#shelfList {
-    display: block;
+#shelfContainer {
+    display: grid;
     position: fixed;
     top: 80px; /* mainHeader.height + mainHeader.paddingTop + mainHeader.paddingBottom */
     left: 0;
@@ -178,8 +178,13 @@ svg path {
     overflow: hidden;
 }
 
-#shelfList.close {
+#shelfContainer.close {
     left: -440px;
+}
+
+#shelfList {
+    margin: 0;
+    padding: 0;
 }
 
 .editShelfTitleButton {
@@ -214,7 +219,7 @@ svg path {
     border-radius: 4px;
 }
 
-.removeShelfButton {
+.moveShelfHandler, .removeShelfButton {
     background-color: transparent;
     width: 20px;
     height: 20px;
@@ -223,12 +228,12 @@ svg path {
     margin: 0 0 0 5px;
 }
 
-.removeShelfButton:hover {
+.moveShelfHandler:hover, .removeShelfButton:hover {
     background-color: transparent;
     opacity: 0.8;
 }
 
-.shelfListItem, .addNewShelfButton {
+.shelfListItem, #addNewShelfButton {
     display: flex;
     align-items: center;
     color: var(--color-text-secondary);
@@ -240,7 +245,7 @@ svg path {
     cursor: pointer;
 }
 
-.addNewShelfButton:hover {
+#addNewShelfButton:hover {
     text-decoration: underline;
 }
 
