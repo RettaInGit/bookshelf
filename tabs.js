@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsPageButton = document.getElementById('settingsPageButton');
     const settingsOverlay = document.getElementById('settingsOverlay');
     const settingsPage = document.getElementById('settingsPage');
-    const closeSettingsButton = document.getElementById('closeSettingsButton');
     let selectedShelfId = "";
     let bookShelfData = [];
     let bookShelfDataUpdated = false;
@@ -167,13 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listener for the overlay to close the settings page when clicked
     settingsOverlay.addEventListener('click', () => {
-        isSettingsPageOpen = false;
-        settingsPage.classList.remove('open');
-        settingsOverlay.classList.remove('open');
-    });
-
-    // Event listener for the close button inside the settings page
-    closeSettingsButton.addEventListener('click', () => {
         isSettingsPageOpen = false;
         settingsPage.classList.remove('open');
         settingsOverlay.classList.remove('open');
