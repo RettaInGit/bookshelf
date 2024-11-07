@@ -1180,8 +1180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Create a function to append new shelves to the shelf list
         shelfList.appendShelfListItem = function(shelf) {shelfList.appendChild(createShelfListItem(shelf));}
 
-        // Create the elements based on the data
-        shelfList.innerHTML = '';
+        // Set sorting parameters
         Sortable.create(shelfList, {
             handle: '.moveShelfHandler',
             animation: 150,
@@ -1195,6 +1194,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 saveBookShelfDataToStorage();
             },
         });
+
+        // Create the elements based on the data
+        shelfList.innerHTML = '';
         bookShelfData.forEach((shelf) => {
             shelfList.appendChild(createShelfListItem(shelf));
 

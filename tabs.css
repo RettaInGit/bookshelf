@@ -233,6 +233,10 @@ svg path {
     opacity: 0.8;
 }
 
+.moveShelfHandler:hover {
+    cursor: grab;
+}
+
 .shelfListItem, #addNewShelfButton {
     display: flex;
     align-items: center;
