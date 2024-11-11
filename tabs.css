@@ -219,7 +219,7 @@ svg path {
     border-radius: 4px;
 }
 
-.moveShelfHandler, .removeShelfButton {
+.moveShelfHandler, .removeShelfButton, .movePageHandler {
     background-color: transparent;
     width: 20px;
     height: 20px;
@@ -228,12 +228,12 @@ svg path {
     margin: 0 0 0 5px;
 }
 
-.moveShelfHandler:hover, .removeShelfButton:hover {
+.moveShelfHandler:hover, .removeShelfButton:hover, .movePageHandler:hover {
     background-color: transparent;
     opacity: 0.8;
 }
 
-.moveShelfHandler:hover {
+.moveShelfHandler:hover, .movePageHandler:hover {
     cursor: grab;
 }
 
@@ -266,7 +266,7 @@ svg path {
 
 #searchBar:focus {
     outline: none !important;
-    border: 3px solid var(--color-button-primary);
+    border: 3px solid var(--color-text-accent);
     padding: 9px 13px;
 }
 
@@ -290,7 +290,7 @@ svg path {
 
 #mainBody {
     margin-top: 90px;
-    padding: 20px;
+    padding: 0 20px;
     padding-bottom: 0;
 }
 
@@ -341,26 +341,26 @@ svg path {
 }
 
 .pagesList {
-    display: grid;
-    list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
 .pagesListItem {
-    display: grid;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
     background-color: var(--color-page-bg);
     border-bottom: 1px solid var(--color-border-page);
 }
 
-.pagesListItem:last-child {
-    border-bottom: none;
+.pagesListItem.sortable-ghost {
+    background-color: var(--color-moveHere-bg);
+    color: var(--color-text-accent);
+    border: 1px dashed var(--color-text-accent);
 }
 
-.pageContainer {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
+.pageSelected {
+    border: 2px solid var(--color-text-accent);
 }
 
 .pageLink {
@@ -374,29 +374,14 @@ svg path {
     text-decoration: underline;
 }
 
-.moveHereButton {
-    display: block;
-    background-color: var(--color-moveHere-bg);
-    color: var(--color-text-accent);
-    padding: 0;
-    margin: 0;
-    border: 1px dashed var(--color-text-accent);
-    border-radius: 0;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.moveHereButton:hover {
-    background-color: var(--color-moveHere-hover-bg);
-}
-
 .bookContainer {
     display: grid;
-    margin-bottom: 20px;
+    margin: 10px 0;
     border: 1px solid var(--color-border-page);
     border-radius: 8px;
     overflow: hidden;
     background-color: var(--color-page-bg);
+    border-bottom: none;
 }
 
 .bookHeader, .bookHeaderTop, .bookHeaderBottom {
@@ -457,15 +442,11 @@ svg path {
     padding: 0;
 }
 
-.moveSelectedPagesButton {
-    margin-left: 0;
-}
-
-.removePageButton, .removeSelectedPagesButton {
+.removeSelectedPagesButton {
     background-color: var(--color-button-remove);
 }
 
-.removePageButton:hover, .removeSelectedPagesButton:hover {
+.removeSelectedPagesButton:hover {
     background-color: var(--color-button-remove-hover);
 }
 

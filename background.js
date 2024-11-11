@@ -95,10 +95,7 @@ function saveAllPagesExceptThis(currentTab) {
 // Generic function to save pages
 async function savePages(tabs) {
   // Check if there are any pages to save
-  if (tabs.length === 0) {
-    console.log('No pages to save');
-    return;
-  }
+  if (tabs.length === 0) return;
 
   // Map the filtered tabs to get their title and URL for the pages
   const newPages = tabs.map(tab => ({
@@ -163,8 +160,6 @@ async function savePages(tabs) {
 
   // Save the updated bookshelf data to storage
   chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookShelfData': bookShelfData }, () => {
-    console.log(`${newPages.length} page(s) saved under "${defaultBookTitle}"`);
-
     // Close the saved tabs
     chrome.tabs.remove(tabs.map(tab => tab.id));
 
