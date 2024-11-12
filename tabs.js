@@ -13,26 +13,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsPageButton = document.getElementById('settingsPageButton');
     const settingsOverlay = document.getElementById('settingsOverlay');
     const settingsPage = document.getElementById('settingsPage');
-    const bookShelf = document.getElementById('bookShelf');
+    const bookList = document.getElementById('bookList');
     let selectedShelfId = "";
-    let bookShelfData = [];
-    let bookShelfDataUpdated = false;
-    let loadingBookShelfData = false;
+    let bookshelfData = [];
+    let bookshelfDataUpdated = false;
+    let loadingBookshelfData = false;
     let pagesToMove = [];  // TODO
     let bookIdOfMovingPages = '';  // TODO
     let isSettingsPageOpen = false;
 
     // Get bookshelf saved data and display it
-    await LoadBookShelfDataFromStorage();
+    await LoadBookshelfDataFromStorage();
 
     // Change the shelf title with the selected one
-    const selectedShelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+    const selectedShelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
     if (selectedShelf) {
         changeSelectedShelfTitle(selectedShelf.title);
     }
 
     // Paint the DOM
-    displayBookShelf();
+    displayBookshelf();
 
     // Get saved theme
     chrome.storage.local.get('themeSelected', (data) => {
@@ -51,9 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Create a timer that check if there are bookshelf data to save
     let intervalId = setInterval(() => {
-        if (bookShelfDataUpdated && !loadingBookShelfData) {
+        if (bookshelfDataUpdated && !loadingBookshelfData) {
             // Save bookshelf data
-            chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookShelfData': bookShelfData }, () => {
+            chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookshelfData': bookshelfData }, () => {
                 // Check for errors
                 if (chrome.runtime.lastError) {
                     console.error('Error setting storage:', chrome.runtime.lastError);
@@ -62,29 +62,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            bookShelfDataUpdated = false;
+            bookshelfDataUpdated = false;
         }
     }, 2000);
 
-    // Create a function to append new shelves to the shelf list
-    shelfList.appendShelfListItem = function(shelf) {shelfList.appendChild(createShelfListItem(shelf));}
-
     // Event listener for messages from background.js
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-        if (message.action === 'bookShelfUpdated') {
+        if (message.action === 'bookshelfUpdated') {
             // Get new bookshelf data and repaint the DOM
-            await LoadBookShelfDataFromStorage();
-            displayBookShelf();
+            await LoadBookshelfDataFromStorage();
+            displayBookshelf();
         }
     });
 
     // Event listener for the extension name to show/hide the shelf dropdown
     selectedShelfTitle.addEventListener('click', () => {
         const arrowIcon = document.getElementById('arrowIcon');
-        const shelfContainer = document.getElementById('shelfContainer');
+        const bookShelves = document.getElementById('bookShelves');
 
-        shelfContainer.classList.toggle('close');
-        arrowIcon.style.transform = shelfContainer.classList.contains('close') ? 'rotate(0deg)' : 'rotate(180deg)';
+        bookShelves.classList.toggle('close');
+        arrowIcon.style.transform = bookShelves.classList.contains('close') ? 'rotate(0deg)' : 'rotate(180deg)';
     });
 
     // Event listener for the add new shelf button
@@ -93,18 +90,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         let newShelfId;
         do {
             newShelfId = generateUUID();
-        } while(bookShelfData.some(shelf => shelf.id === newShelfId));
+        } while(bookshelfData.some(shelf => shelf.id === newShelfId));
 
         // Create new shelf
         const newShelf = {
             id: newShelfId,
-            title: `Shelf ${bookShelfData.length + 1}`,
+            title: `Shelf ${bookshelfData.length + 1}`,
             books: []
         }
-        bookShelfData.push(newShelf);  // Add the new shelf at the end of the array
+        bookshelfData.push(newShelf);  // Add the new shelf at the end of the array
 
         // Save the new shelf to storage
-        saveBookShelfDataToStorage();
+        saveBookshelfDataToStorage();
 
         // Insert shelf in the list
         shelfList.appendShelfListItem(newShelf);
@@ -128,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             //    }
 
             // Repaint the DOM
-            displayBookShelf();
+            displayBookshelf();
         }, 250);
     });
 
@@ -185,36 +182,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Function to get bookshelf saved data from storage
-    async function LoadBookShelfDataFromStorage() {
-        loadingBookShelfData = true;
+    async function LoadBookshelfDataFromStorage() {
+        loadingBookshelfData = true;
 
-        const data = await chrome.storage.local.get(['selectedShelfId', 'bookShelfData']);
-        if (!data.bookShelfData) {
-            bookShelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
-            selectedShelfId = bookShelfData[0].id;
+        const data = await chrome.storage.local.get(['selectedShelfId', 'bookshelfData']);
+        if (!data.bookshelfData) {
+            bookshelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
+            selectedShelfId = bookshelfData[0].id;
         }
         else {
-            bookShelfData = data.bookShelfData;
-            selectedShelfId = data.selectedShelfId || bookShelfData[0].id;
+            bookshelfData = data.bookshelfData;
+            selectedShelfId = data.selectedShelfId || bookshelfData[0].id;
 
-            if (!bookShelfData.find(shelf => shelf.id === selectedShelfId)) {
-                selectedShelfId = bookShelfData[0].id;
+            if (!bookshelfData.find(shelf => shelf.id === selectedShelfId)) {
+                selectedShelfId = bookshelfData[0].id;
 
-                saveBookShelfDataToStorage();
+                saveBookshelfDataToStorage();
             }
         }
 
-        loadingBookShelfData = false;
+        loadingBookshelfData = false;
     }
 
     // Function to set bookshelf data to storage
-    async function saveBookShelfDataToStorage() {
-        bookShelfDataUpdated = true;  // bookshelf data has changed
+    async function saveBookshelfDataToStorage() {
+        bookshelfDataUpdated = true;  // bookshelf data has changed
     }
 
     // Get book element from ID
     function getBookElementById(bookId) {
-        return document.querySelector(`.bookContainer[data-book-id="${bookId}"]`);
+        return document.querySelector(`.bookListItem[data-book-id="${bookId}"]`);
     }
 
     // Get shelf element from ID
@@ -234,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Function to display bookshelf data on the main page
-    function displayBookShelf() {
+    function displayBookshelf() {
         const fragment = document.createDocumentFragment();  // Create fragment to minimizes the number of reflows and repaints
         const currentSearchQuery = searchBar.value.trim().toLowerCase();  // Get current filtering query
 
@@ -260,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Toggle between edit and save modes for the shelf title
             editShelfTitleButton.addEventListener('click', () => {
                 // Find the shelf index
-                const shelf = bookShelfData.find(shelf => shelf.id === shelfId);
+                const shelf = bookshelfData.find(shelf => shelf.id === shelfId);
                 if (!shelf) return;
 
                 // Get HTML element
@@ -312,7 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
 
                     // Save the updated shelf to storage
-                    saveBookShelfDataToStorage();
+                    saveBookshelfDataToStorage();
 
                     // Disable contentEditable
                     shelfTitle.contentEditable = false;
@@ -340,7 +337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             shelfTitleElem.addEventListener('click', () => {
                 if ((shelfTitleElem.contentEditable === 'false') && (shelfId !== selectedShelfId)) {
                     // Find the shelf
-                    const shelf = bookShelfData.find(shelf => shelf.id === shelfId);
+                    const shelf = bookshelfData.find(shelf => shelf.id === shelfId);
                     if (!shelf) return;
 
                     // Change the selected shelf title
@@ -348,10 +345,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Change and save the selected shelf
                     selectedShelfId = shelfId;
-                    saveBookShelfDataToStorage();
+                    saveBookshelfDataToStorage();
 
                     // Repaint the DOM
-                    displayBookShelf();
+                    displayBookshelf();
                 }
             });
 
@@ -399,14 +396,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Remove shelf
             removeShelfButton.addEventListener('click', () => {
-                if (bookShelfData.length > 1) {
+                if (bookshelfData.length > 1) {
                     if (shelfId === selectedShelfId) {
                         alert('Please choose another shelf before removing this.');
                     }
                     else if (confirm('Are you sure you want to remove this shelf?')) {
                         // Remove shelf from data and save it
-                        bookShelfData = bookShelfData.filter(shelf => shelf.id !== shelfId);
-                        saveBookShelfDataToStorage();
+                        bookshelfData = bookshelfData.filter(shelf => shelf.id !== shelfId);
+                        saveBookshelfDataToStorage();
 
                         // Remove shelf element
                         const shelfElem = getShelfElementById(shelfId);
@@ -417,19 +414,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else if (confirm('Are you sure you want to reset this shelf?')) {
                     // Remove all books from this shelf
-                    bookShelfData[0].books = [];
+                    bookshelfData[0].books = [];
 
                     // Change shelf name
-                    bookShelfData[0].title = "Shelf 1";
+                    bookshelfData[0].title = "Shelf 1";
 
                     // Update the selected shelf title
-                    changeSelectedShelfTitle(bookShelfData[0].title);
+                    changeSelectedShelfTitle(bookshelfData[0].title);
 
                     // Save updated shelf
-                    saveBookShelfDataToStorage();
+                    saveBookshelfDataToStorage();
 
                     // Clear existing content
-                    bookShelf.innerHTML = '';
+                    bookList.innerHTML = '';
 
                     // Display the message that there are no page saved
                     displayResultMessage();
@@ -485,7 +482,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Toggle between edit and save modes for the book title
             editBookTitleButton.addEventListener('click', () => {
                 // Find the shelf
-                const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                 if (!shelf) return;
 
                 // Find the book
@@ -536,7 +533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     book.title = newTitle;
 
                     // Save the updated book to storage
-                    saveBookShelfDataToStorage();
+                    saveBookshelfDataToStorage();
 
                     // Disable contentEditable
                     bookTitle.contentEditable = false;
@@ -576,6 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         function createBookHeaderTop(book) {
             const bookHeaderTop = document.createElement('div');
             bookHeaderTop.className = 'bookHeaderTop';
+            bookHeaderTop.style.marginBottom = book.collapsed ? '0' : '5px';
 
             // Create children elements
             const editBookTitleButton = createEditBookTitleButton(book.id);
@@ -624,7 +622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Restore selected pages from a book
             restoreSelectedPagesButton.addEventListener('click', () => {
                 // Find the shelf
-                const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                 if (!shelf) return;
 
                 // Find the book
@@ -676,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Remove selected pages from a book
             removeSelectedPagesButton.addEventListener('click', () => {
                 // Find the shelf
-                const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                 if (!shelf) return;
 
                 // Find the book
@@ -684,9 +682,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!book) return;
 
                 // Get HTML elements
-                const bookContainer = getBookElementById(bookId);
-                const pagesList = bookContainer.getPagesList();
-                const pageCheckboxes = pagesList.getAllPageCheckbox();
+                const bookListItem = getBookElementById(bookId);
+                const pageList = bookListItem.getPageList();
+                const pageCheckboxes = pageList.getAllPageCheckbox();
 
                 // Assert data compatibility
                 if (!(pageCheckboxes.length === book.pages.length)) {
@@ -714,7 +712,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Remove pages starting from the highest index to avoid index shifting
                 indicesToRemove.sort((a, b) => b - a).forEach((pageIndex) => {
-                    pagesList.removeChild(pagesList.children[pageIndex]);
+                    pageList.removeChild(pageList.children[pageIndex]);
                     book.pages.splice(pageIndex, 1);
                 });
 
@@ -727,17 +725,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Update pages count
                 updatePageCount(bookId);
 
-                // Save the updated bookShelfData
-                saveBookShelfDataToStorage();
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
             });
 
             return removeSelectedPagesButton;
         }
 
         // Function to create the bottom part of a book header
-        function createBookHeaderBottom(bookId) {
+        function createBookHeaderBottom(bookCollapsed, bookId) {
             const bookHeaderBottom = document.createElement('div');
             bookHeaderBottom.className = 'bookHeaderBottom';
+            bookHeaderBottom.style.display = bookCollapsed ? 'none' : 'flex';
 
             // Create children elements
             const bookCheckbox = createBookCheckbox(bookId);
@@ -764,7 +763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Create children elements
             const bookHeaderTop = createBookHeaderTop(book);
-            const bookHeaderBottom = createBookHeaderBottom(bookId);
+            const bookHeaderBottom = createBookHeaderBottom(book.collapsed, bookId);
 
             // Append elements to the header in the desired order
             bookHeader.appendChild(bookHeaderTop);
@@ -781,7 +780,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if ((event.target === bookHeader) || (event.target === bookHeaderTop) || (event.target === bookHeaderBottom) || (event.target === bookHeaderTop.getPagesCount())
                     || ((event.target === bookHeaderTop.getBookTitle()) && (bookHeaderTop.getEditBookTitleButton().dataset.mode === 'edit'))) {
                     // Find the shelf
-                    const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+                    const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                     if (!shelf) return;
 
                     // Find the book
@@ -789,22 +788,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (!book) return;
 
                     // Get HTML elements
-                    const pagesList = getBookElementById(bookId).getPagesList();
+                    const pageList = getBookElementById(bookId).getPageList();
 
                     // Toggle the display style
                     if (book.collapsed) {
-                        pagesList.style.display = 'grid';
+                        pageList.style.display = 'grid';
                         bookHeaderBottom.style.display = 'flex';
                         bookHeaderTop.style.marginBottom = '5px';
                     } else {
-                        pagesList.style.display = 'none';
+                        pageList.style.display = 'none';
                         bookHeaderBottom.style.display = 'none';
                         bookHeaderTop.style.marginBottom = '0';
                     }
                     book.collapsed ^= true;  // toggle value
 
-                    // Save the updated bookShelfData
-                    saveBookShelfDataToStorage();
+                    // Save the updated bookshelfData
+                    saveBookshelfDataToStorage();
                 }
             });
 
@@ -820,9 +819,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Update the book checkbox state based on individual checkboxes
             pageCheckbox.addEventListener('change', () => {
-                const bookContainer = getBookElementById(bookId);
-                const bookCheckbox = bookContainer.getBookCheckbox();
-                const pageCheckboxes = bookContainer.getAllPageCheckbox();
+                const bookListItem = getBookElementById(bookId);
+                const bookCheckbox = bookListItem.getBookCheckbox();
+                const pageCheckboxes = bookListItem.getAllPageCheckbox();
 
                 const allChecked = Array.from(pageCheckboxes).every(checkbox => checkbox.checked);
                 const anyChecked = Array.from(pageCheckboxes).some(checkbox => checkbox.checked);
@@ -868,11 +867,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Function to create a page list item
-        function createPagesListItem(page, bookId) {
-            const pagesListItem = document.createElement('li');
-            pagesListItem.className = 'pagesListItem';
-            pagesListItem.dataset.pageId = page.id;
-            pagesListItem.style.display = page.title.toLowerCase().includes(currentSearchQuery) ? 'flex' : 'none';
+        function createPageListItem(page, bookId) {
+            const pageListItem = document.createElement('li');
+            pageListItem.className = 'pageListItem';
+            pageListItem.dataset.pageId = page.id;
+            pageListItem.style.display = page.title.toLowerCase().includes(currentSearchQuery) ? 'flex' : 'none';
 
             // Create children elements
             const pageCheckbox = createPageCheckbox(bookId);
@@ -880,33 +879,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             const movePageHandler = createMovePageHandler();
 
             // Append elements to the item in the desired order
-            pagesListItem.appendChild(pageCheckbox);
-            pagesListItem.appendChild(pageLink);
-            pagesListItem.appendChild(movePageHandler);
+            pageListItem.appendChild(pageCheckbox);
+            pageListItem.appendChild(pageLink);
+            pageListItem.appendChild(movePageHandler);
 
             // Create functions to retrieve nested elements
-            pagesListItem.getPageId = function() {return pagesListItem.dataset.pageId;}
-            pagesListItem.getPageCheckbox = function() {return pageCheckbox;}
+            pageListItem.getPageId = function() {return pageListItem.dataset.pageId;}
+            pageListItem.getPageCheckbox = function() {return pageCheckbox;}
 
-            return pagesListItem;
+            return pageListItem;
         }
 
         // Function to create a pages list
-        function createPagesList(book) {
-            const pagesList = document.createElement('ul');
-            pagesList.className = 'pagesList';
-            pagesList.style.display = book.collapsed ? 'none' : 'grid';
+        function createPageList(book) {
+            const pageList = document.createElement('ul');
+            pageList.className = 'pageList';
+            pageList.style.display = book.collapsed ? 'none' : 'grid';
 
             // Append elements to the pages list in the desired order
             book.pages.forEach((page) => {
-                pagesList.appendChild(createPagesListItem(page, book.id));
+                pageList.appendChild(createPageListItem(page, book.id));
             });
 
             // Create functions to retrieve nested elements
-            pagesList.getAllPagesListItem = function() {return [...pagesList.children];}
-            pagesList.getAllPageCheckbox = function() {
+            pageList.getAllPageListItem = function() {return [...pageList.children];}
+            pageList.getAllPageCheckbox = function() {
                 const allPageCheckbox = [];
-                pagesList.getAllPagesListItem().forEach(item => {
+                pageList.getAllPageListItem().forEach(item => {
                     allPageCheckbox.push(item.getPageCheckbox());
                 });
 
@@ -915,7 +914,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Set sorting parameters for the pages
             var startBookId = book.id;
-            Sortable.create(pagesList, {
+            Sortable.create(pageList, {
                 group: {
                     name: 'movePages',
                     //pull: 'clone',
@@ -927,7 +926,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 onEnd: function(evt) {
                     // Find the shelf
-                    const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+                    const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                     if (!shelf) return;
 
                     // Find the book
@@ -949,7 +948,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let pagesDragged = startBook.pages.filter(page => idOfPagesDragged.includes(page.id));
                     if (pagesDragged.length === 0) return;
 
-                    if (evt.to === bookShelf) {
+                    if (evt.to === bookList) {
                         // Create new book ID
                         let newBookId;
                         do {
@@ -975,18 +974,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Remove wrongly displaced pages
                         if (evt.items.length > 0) {
-                            evt.items.forEach(item => bookShelf.removeChild(item));
+                            evt.items.forEach(item => bookList.removeChild(item));
                         }
                         else {
-                            bookShelf.removeChild(evt.item);
+                            bookList.removeChild(evt.item);
                         }
 
                         // Draw new book
                         if (newBookIndex === shelf.books.length - 1) {
-                            bookShelf.appendChild(createBookContainer(newBook));
+                            bookList.appendChild(createBookListItem(newBook));
                         }
                         else {
-                            bookShelf.insertBefore(createBookContainer(newBook), bookShelf.children[newBookIndex]);
+                            bookList.insertBefore(createBookListItem(newBook), bookList.children[newBookIndex]);
                         }
 
                         // Remove pages from start book
@@ -1010,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else {
                         // Get ID of the book where the pages are moved
-                        let endBookId = Array.from(bookShelf.children).filter(child => child.getPagesList() === evt.to)[0].dataset.bookId;
+                        let endBookId = Array.from(bookList.children).filter(child => child.getPageList() === evt.to)[0].dataset.bookId;
 
                         // Get the book where the pages are moved
                         const endBook = shelf.books.find(book => book.id === endBookId);
@@ -1048,55 +1047,58 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Redraw only the end book
                         evt.to.innerHTML = '';
                         endBook.pages.forEach((page) => {
-                            evt.to.appendChild(createPagesListItem(page, endBookId));
+                            evt.to.appendChild(createPageListItem(page, endBookId));
                         });
                         updatePageCount(endBookId);  // Update pages count
                     }
 
-                    // Save the updated bookShelfData
-                    saveBookShelfDataToStorage();
+                    // Save the updated bookshelfData
+                    saveBookshelfDataToStorage();
                 },
             });
 
-            return pagesList;
+            return pageList;
         }
 
         // Function to create a container for the book info and controls
-        function createBookContainer(book) {
-            const bookContainer = document.createElement('div');
-            bookContainer.className = 'bookContainer';
-            bookContainer.dataset.bookId = book.id;
+        function createBookListItem(book) {
+            const bookListItem = document.createElement('div');
+            bookListItem.className = 'bookListItem';
+            bookListItem.dataset.bookId = book.id;
 
             // Create children elements
             const bookHeader = createBookHeader(book);
-            const pagesList = createPagesList(book);
+            const pageList = createPageList(book);
 
             // Append elements to the container in the desired order
-            bookContainer.appendChild(bookHeader);
-            bookContainer.appendChild(pagesList);
+            bookListItem.appendChild(bookHeader);
+            bookListItem.appendChild(pageList);
 
             // Create functions to retrieve nested elements
-            bookContainer.getBookTitle = function() {return bookHeader.getBookTitle();}
-            bookContainer.getPagesCount = function() {return bookHeader.getPagesCount();}
-            bookContainer.getBookCheckbox = function() {return bookHeader.getBookCheckbox();}
-            bookContainer.getPagesList = function() {return pagesList;}
-            bookContainer.getAllPageCheckbox = function() {return pagesList.getAllPageCheckbox();}
-            bookContainer.getAllPagesListItem = function() {return pagesList.getAllPagesListItem();}
+            bookListItem.getBookTitle = function() {return bookHeader.getBookTitle();}
+            bookListItem.getPagesCount = function() {return bookHeader.getPagesCount();}
+            bookListItem.getBookCheckbox = function() {return bookHeader.getBookCheckbox();}
+            bookListItem.getPageList = function() {return pageList;}
+            bookListItem.getAllPageCheckbox = function() {return pageList.getAllPageCheckbox();}
+            bookListItem.getAllPageListItem = function() {return pageList.getAllPageListItem();}
 
             // Show or hide the book based on whether any pages are visible
-            bookContainer.style.display = Object.values(bookContainer.getAllPagesListItem()).some(item => item.style.display === 'flex') ? 'grid': 'none';
+            bookListItem.style.display = Object.values(bookListItem.getAllPageListItem()).some(item => item.style.display === 'flex') ? 'grid': 'none';
 
-            return bookContainer;
+            return bookListItem;
         }
+
+        // Create a function to append new shelves to the shelf list
+        shelfList.appendShelfListItem = function(shelf) {shelfList.appendChild(createShelfListItem(shelf));}
 
         // Create the elements based on the data
         shelfList.innerHTML = '';
-        bookShelfData.forEach((shelf) => {
+        bookshelfData.forEach((shelf) => {
             shelfList.appendChild(createShelfListItem(shelf));
 
             if (shelf.id === selectedShelfId) {
                 shelf.books.forEach((book) => {
-                    fragment.appendChild(createBookContainer(book));
+                    fragment.appendChild(createBookListItem(book));
                 });
             }
         });
@@ -1107,22 +1109,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             animation: 150,
 
             onEnd: function(data) {
-                if( (data.oldIndex >= bookShelfData.length) || (data.newIndex >= bookShelfData.length) ) return;
+                if( (data.oldIndex >= bookshelfData.length) || (data.newIndex >= bookshelfData.length) ) return;
 
                 // Move shelf in the new position
-                bookShelfData.splice(data.newIndex, 0, bookShelfData.splice(data.oldIndex, 1)[0]);
+                bookshelfData.splice(data.newIndex, 0, bookshelfData.splice(data.oldIndex, 1)[0]);
 
-                // Save the updated bookShelfData
-                saveBookShelfDataToStorage();
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
             },
         });
 
         // Clear existing content and append the fragment to display the data
-        bookShelf.innerHTML = '';
-        bookShelf.appendChild(fragment);
+        bookList.innerHTML = '';
+        bookList.appendChild(fragment);
 
         // Set sorting parameters for the books
-        Sortable.create(bookShelf, {
+        Sortable.create(bookList, {
             group: {
                 name: 'movePages',
                 pull: false,  // disable pulling from the list
@@ -1138,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to update pages count
     function updatePageCount(bookId) {
         // Find the shelf
-        const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
         if (!shelf) return;
 
         // Find the book
@@ -1155,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Function to remove an entire page book
     function removeBook(bookId) {
         // Find the shelf
-        const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
         if (!shelf) return;
 
         // Find the book index
@@ -1163,31 +1165,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (bookIndex < 0) return;
 
         // Get HTML element
-        const bookContainer = getBookElementById(bookId);
-        if (!bookContainer) return;
+        const bookListItem = getBookElementById(bookId);
+        if (!bookListItem) return;
 
         // Remove the book
-        bookContainer.parentElement.removeChild(bookContainer);
+        bookListItem.parentElement.removeChild(bookListItem);
         shelf.books.splice(bookIndex, 1);
 
         // Display a message if there are no pages
         displayResultMessage();
 
-        // Save the updated bookShelfData
-        saveBookShelfDataToStorage();
+        // Save the updated bookshelfData
+        saveBookshelfDataToStorage();
     }
 
     // Display a message if there are no pages visible in the page
     function displayResultMessage() {
         // Find the shelf
-        const shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
         // Get HTML elements
         const resultMessage = document.getElementById('resultMessage');
-        const bookContainers = document.getElementsByClassName('bookContainer');
+        const bookListItems = document.getElementsByClassName('bookListItem');
 
         // Check if any book is visible
-        const anyBooksVisible = Object.values(bookContainers).some(book => book.style.display === 'grid');
+        const anyBooksVisible = Object.values(bookListItems).some(book => book.style.display === 'grid');
 
         // Check if the data is correct
         if (!shelf) {

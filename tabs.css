@@ -162,7 +162,7 @@ svg path {
     margin-right: 5px;
 }
 
-#shelfContainer {
+#bookShelves {
     display: grid;
     position: fixed;
     top: 80px; /* mainHeader.height + mainHeader.paddingTop + mainHeader.paddingBottom */
@@ -178,7 +178,7 @@ svg path {
     overflow: hidden;
 }
 
-#shelfContainer.close {
+#bookShelves.close {
     left: -440px;
 }
 
@@ -334,18 +334,18 @@ svg path {
     right: 0;
 }
 
-#bookShelf {
+#bookList {
     display: grid;
     width: 100%;
     max-width: 1000px;
 }
 
-.pagesList {
+.pageList {
     padding: 0;
     margin: 0;
 }
 
-.pagesListItem {
+.pageListItem {
     display: flex;
     align-items: center;
     padding: 10px 15px;
@@ -353,7 +353,7 @@ svg path {
     border-bottom: 1px solid var(--color-border-page);
 }
 
-.pagesListItem.sortable-ghost {
+.pageListItem.sortable-ghost {
     background-color: var(--color-moveHere-bg);
     color: var(--color-text-accent);
     border: 1px dashed var(--color-text-accent);
@@ -374,7 +374,7 @@ svg path {
     text-decoration: underline;
 }
 
-.bookContainer {
+.bookListItem {
     display: grid;
     margin: 10px 0;
     border: 1px solid var(--color-border-page);

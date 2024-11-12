@@ -105,37 +105,37 @@ async function savePages(tabs) {
   }));
 
   // Retrieve bookshelf saved data to determine the default book title and save it
-  let bookShelfData;
+  let bookshelfData;
   let selectedShelfId;
-  const data = await chrome.storage.local.get(['selectedShelfId', 'bookShelfData']);
-  if (!data.bookShelfData) {
-    bookShelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
-    selectedShelfId = bookShelfData[0].id;
+  const data = await chrome.storage.local.get(['selectedShelfId', 'bookshelfData']);
+  if (!data.bookshelfData) {
+    bookshelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
+    selectedShelfId = bookshelfData[0].id;
   }
   else {
-    bookShelfData = data.bookShelfData;
-    selectedShelfId = data.selectedShelfId || bookShelfData[0].id;
+    bookshelfData = data.bookshelfData;
+    selectedShelfId = data.selectedShelfId || bookshelfData[0].id;
   }
 
   // Find the shelf
-  let shelf = bookShelfData.find(shelf => shelf.id === selectedShelfId);
+  let shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
   if (!shelf) {
     // Create new shelf ID
     let newShelfId;
     do {
         newShelfId = generateUUID();
-    } while(bookShelfData.some(shelf => shelf.id === newShelfId));
+    } while(bookshelfData.some(shelf => shelf.id === newShelfId));
 
     // Create new shelf
     const newShelf = {
       id: newShelfId,
-      title: `Shelf ${bookShelfData.length + 1}`,
+      title: `Shelf ${bookshelfData.length + 1}`,
       books: []
     }
 
     // Save new shelf and add it at the end of the array
     selectedShelfId = newShelf.id;
-    bookShelfData.push(newShelf);
+    bookshelfData.push(newShelf);
 
     shelf = newShelf;
   }
@@ -159,11 +159,11 @@ async function savePages(tabs) {
   shelf.books.unshift(newBook);
 
   // Save the updated bookshelf data to storage
-  chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookShelfData': bookShelfData }, () => {
+  chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookshelfData': bookshelfData }, () => {
     // Close the saved tabs
     chrome.tabs.remove(tabs.map(tab => tab.id));
 
     // Send a message to tabs.html to refresh the bookshelf
-    chrome.runtime.sendMessage({ action: 'bookShelfUpdated' });
+    chrome.runtime.sendMessage({ action: 'bookshelfUpdated' });
   });
 }
