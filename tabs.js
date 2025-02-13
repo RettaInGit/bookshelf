@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let pagesToMove = [];
     let bookshelfDataUpdated = false;
     let loadingBookshelfData = false;
-    let isSettingsPageOpen = false;
 
     // Get bookshelf saved data and display it
     await LoadBookshelfDataFromStorage();
@@ -41,7 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await chrome.storage.local.get(['selectedShelfId', 'bookshelfData']);
         if (!data.bookshelfData) {
-            bookshelfData = [{ id: generateUUID(), title: 'Shelf 1', books: [] }];
+            bookshelfData = [{
+                id: generateUUID(),
+                title: 'Shelf 1',
+                books: []
+            }];
             selectedShelfId = bookshelfData[0].id;
         }
         else {
@@ -92,7 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.classList.add('darkTheme');
             document.getElementById('sunIcon').style.visibility = "hidden";
             document.getElementById('moonIcon').style.visibility = "visible";
-        } else {
+        }
+        else {
             document.body.classList.remove('darkTheme');
             document.getElementById('sunIcon').style.visibility = "visible";
             document.getElementById('moonIcon').style.visibility = "hidden";
@@ -103,7 +107,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let intervalId = setInterval(() => {
         if (bookshelfDataUpdated && !loadingBookshelfData) {
             // Save bookshelf data
-            chrome.storage.local.set({ 'selectedShelfId': selectedShelfId, 'bookshelfData': bookshelfData }, () => {
+            chrome.storage.local.set({
+                'selectedShelfId': selectedShelfId,
+                'bookshelfData': bookshelfData
+            }, () => {
                 // Check for errors
                 if (chrome.runtime.lastError) {
                     console.error('Error setting storage:', chrome.runtime.lastError);
@@ -140,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let newShelfId;
         do {
             newShelfId = generateUUID();
-        } while(bookshelfData.some(shelf => shelf.id === newShelfId));
+        } while (bookshelfData.some(shelf => shelf.id === newShelfId));
 
         // Create new shelf
         const newShelf = {
@@ -186,12 +193,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (currentTheme === 'light') {  // Switch to dark
                 document.body.classList.add('darkTheme');
-                chrome.storage.local.set({ 'themeSelected': 'dark' });
+                chrome.storage.local.set({
+                    'themeSelected': 'dark'
+                });
                 document.getElementById('sunIcon').style.visibility = "hidden";
                 document.getElementById('moonIcon').style.visibility = "visible";
-            } else {  // Switch to light
+            }
+            else {  // Switch to light
                 document.body.classList.remove('darkTheme');
-                chrome.storage.local.set({ 'themeSelected': 'light' });
+                chrome.storage.local.set({
+                    'themeSelected': 'light'
+                });
                 document.getElementById('sunIcon').style.visibility = "visible";
                 document.getElementById('moonIcon').style.visibility = "hidden";
             }
@@ -202,16 +214,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     settingsPageButton.addEventListener('click', (event) => {
         event.preventDefault(); // Prevent default link behavior
 
-        isSettingsPageOpen = !isSettingsPageOpen;
-
-        if (isSettingsPageOpen) {
-            // Open the settings page
-            settingsPage.classList.add('open');
-            settingsOverlay.classList.add('open');
-        } else {
+        if (settingsPage.classList.contains('open')) {
             // Close the settings page
             settingsPage.classList.remove('open');
             settingsOverlay.classList.remove('open');
+        }
+        else {
+            // Open the settings page
+            settingsPage.classList.add('open');
+            settingsOverlay.classList.add('open');
         }
     });
 
@@ -226,9 +237,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     dropAreaRemoveSelectedPagesButton.addEventListener('click', () => {
         // Get all checkboxes
         let dropAreaCheckboxes = dropAreaList.querySelectorAll('.pageCheckbox');
-
-        // Assert data compatibility
-        if (dropAreaCheckboxes.length !== pagesToMove.length) return;
 
         // Collect the indices of pages to remove
         let indicesToRemove = [];
@@ -261,7 +269,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Uncheck the drop area checkbox
-        document.querySelector('#dropAreaCheckbox').checked = false;
+        dropAreaCheckbox.checked = false;
+        dropAreaCheckbox.indeterminate = false;
     });
 
     // Event listener for the floating button
@@ -278,7 +287,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 dropArea.classList.add('hidden');
             }, 300); // Wait for the transition to finish
-        } else {
+        }
+        else {
             // Open the drop area
             dropArea.classList.remove('hidden');
             setTimeout(() => {
@@ -291,15 +301,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listener for the overlay to close the settings page when clicked
     settingsOverlay.addEventListener('click', () => {
-        isSettingsPageOpen = false;
         settingsPage.classList.remove('open');
         settingsOverlay.classList.remove('open');
     });
 
     // Close the settings page when the Escape key is pressed
     document.addEventListener('keydown', (event) => {
-        if ((event.key === 'Escape') && isSettingsPageOpen) {
-            isSettingsPageOpen = false;
+        if (event.key === 'Escape') {
             settingsPage.classList.remove('open');
             settingsOverlay.classList.remove('open');
         }
@@ -333,7 +341,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             editShelfTitleButton.addEventListener('click', () => {
                 // Find the shelf index
                 const shelf = bookshelfData.find(shelf => shelf.id === shelfId);
-                if (!shelf) return;
 
                 // Get HTML element
                 const shelfTitle = getShelfElementById(shelfId).querySelector('.shelfTitle');
@@ -365,7 +372,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             editShelfTitleButton.click(); // Save on Enter key
                         }
                     };
-                } else {
+                }
+                else {
                     // Switch to view mode (save changes)
                     const newTitle = shelfTitle.textContent.trim();
 
@@ -413,7 +421,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if ((shelfTitleElem.contentEditable === 'false') && (shelfId !== selectedShelfId)) {
                     // Find the shelf
                     const shelf = bookshelfData.find(shelf => shelf.id === shelfId);
-                    if (!shelf) return;
 
                     // Change the selected shelf title
                     changeSelectedShelfTitle(shelf.title);
@@ -434,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         function createMoveShelfHandler() {
             const moveShelfHandler = document.createElement('button');
             moveShelfHandler.title = 'Move this shelf';
-            moveShelfHandler.className ='moveShelfHandler';
+            moveShelfHandler.className = 'moveShelfHandler';
 
             // Create SVG element
             const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -547,11 +554,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             editBookTitleButton.addEventListener('click', () => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                if (!shelf) return;
 
                 // Find the book
                 const book = shelf.books.find(book => book.id === bookId);
-                if (!book) return;
 
                 // Get HTML element
                 const bookTitle = getBookElementById(bookId).querySelector('.bookTitle');
@@ -583,7 +588,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             editBookTitleButton.click(); // Save on Enter key
                         }
                     };
-                } else {
+                }
+                else {
                     // Switch to view mode (save changes)
                     const newTitle = bookTitle.textContent.trim();
 
@@ -675,20 +681,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             restoreSelectedPagesButton.addEventListener('click', () => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                if (!shelf) return;
 
                 // Find the book
                 const book = shelf.books.find(book => book.id === bookId);
-                if (!book) return;
 
                 // Get HTML elements
                 const pageCheckboxes = getBookElementById(bookId).querySelectorAll('.pageCheckbox');
-
-                // Assert data compatibility
-                if (pageCheckboxes.length !== book.pages.length) {
-                    console.assert(false, `Assert error when restoring selected pages in ${bookId} book`);
-                    return;
-                }
 
                 // Collect the pages to restore
                 const pagesToRestore = [];
@@ -710,7 +708,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Restore the selected pages by creating new pages in the browser
                 pagesToRestore.forEach(page => {
-                    chrome.tabs.create({ url: page.url });
+                    chrome.tabs.create({
+                        url: page.url
+                    });
                 });
             });
 
@@ -727,22 +727,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             removeSelectedPagesButton.addEventListener('click', () => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                if (!shelf) return;
 
                 // Find the book
                 const book = shelf.books.find(book => book.id === bookId);
-                if (!book) return;
 
                 // Get HTML elements
                 const bookElem = getBookElementById(bookId);
                 const pageList = bookElem.querySelector('.pageList');
                 const pageCheckboxes = bookElem.querySelectorAll('.pageCheckbox');
-
-                // Assert data compatibility
-                if (pageCheckboxes.length !== book.pages.length) {
-                    console.assert(false, `Assert error when removing selected pages in ${bookId} book`);
-                    return;
-                }
 
                 // Collect the indices of pages to remove
                 let indicesToRemove = [];
@@ -785,7 +777,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 // Uncheck the drop area checkbox
-                bookElem.querySelector('.bookCheckbox').checked = false;
+                let bookCheckbox = bookElem.querySelector('.bookCheckbox');
+                bookCheckbox.checked = false;
+                bookCheckbox.indeterminate = false;
 
                 // Update pages count
                 updatePageCount(bookId);
@@ -835,11 +829,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     || ((event.target === bookTitle) && (editBookTitleButton.dataset.mode === 'edit'))) {
                     // Find the shelf
                     const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                    if (!shelf) return;
 
                     // Find the book
                     const book = shelf.books.find(book => book.id === bookId);
-                    if (!book) return;
 
                     // Get HTML elements
                     const pageList = bookElem.querySelector('.pageList');
@@ -849,7 +841,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         pageList.style.display = 'grid';
                         bookHeaderBottom.style.display = 'flex';
                         bookHeaderTop.style.marginBottom = '5px';
-                    } else {
+                    }
+                    else {
                         pageList.style.display = 'none';
                         bookHeaderBottom.style.display = 'none';
                         bookHeaderTop.style.marginBottom = '0';
@@ -903,7 +896,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         function createMovePageHandler() {
             const movePageHandler = document.createElement('button');
             movePageHandler.title = 'Move this shelf, click to multi-select';
-            movePageHandler.className ='movePageHandler';
+            movePageHandler.className = 'movePageHandler';
 
             // Create SVG element
             const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -961,16 +954,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 animation: 150,
 
                 onEnd: function(evt) {
-                    // Assert that the items moved are congruent
-                    if (evt.items.length != evt.oldIndicies.length) return;
-
                     // Find the shelf
                     const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                    if (!shelf) return;
 
                     // Find the book
                     const startBook = shelf.books.find(book => book.id === startBookId);
-                    if (!startBook) return;
 
                     // Get all the items that were dragged
                     let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
@@ -978,8 +966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Find dragged pages in the start book
                     let pagesDragged = Array.from(itemIndexes, index => startBook.pages[index]);
-                    if (evt.to !== dropAreaList && pagesDragged.length === 0) return;
-                    if (pagesDragged.length !== itemsDragged.length) return;
+                    if (pagesDragged.length === 0) return;  // Nothing to do
 
                     // Get new index
                     let newIndex = evt.newIndex;
@@ -997,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         let newBookId;
                         do {
                             newBookId = generateUUID();
-                        } while(shelf.books.some(book => book.id === newBookId));
+                        } while (shelf.books.some(book => book.id === newBookId));
 
                         // Create default book title as 'Book X'
                         let defaultBookTitle = `Book ${shelf.books.length + 1}`;
@@ -1080,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 });
 
                                 // Add the clone to the drop area list
-                                if(newIndex >= evt.to.children.length) {
+                                if (newIndex >= evt.to.children.length) {
                                     evt.to.appendChild(clone);
                                 }
                                 else {
@@ -1102,7 +1089,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Get the book where the pages are moved
                         const endBook = shelf.books.find(book => book.id === endBookId);
-                        if (!endBook) return;
 
                         // Check if the pages we are moving have the same ID as those in the book
                         let pagesIds = endBook.pages.map(page => page.id);
@@ -1158,13 +1144,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookListItem.appendChild(createPageList(book));
 
             // Show or hide the book based on whether any pages are visible
-            bookListItem.style.display = bookListItem.querySelector('.pageListItem[style*="display: flex"]') ? 'grid': 'none';
+            bookListItem.style.display = bookListItem.querySelector('.pageListItem[style*="display: flex"]') ? 'grid' : 'none';
 
             return bookListItem;
         }
 
         // Create a function to append new shelves to the shelf list
-        shelfList.appendShelfListItem = function(shelf) {shelfList.appendChild(createShelfListItem(shelf));}
+        shelfList.appendShelfListItem = function(shelf) {
+            shelfList.appendChild(createShelfListItem(shelf));
+        }
 
         // Create the elements based on the data
         shelfList.innerHTML = '';
@@ -1206,13 +1194,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             swapThreshold: .9,
             animation: 150,
 
-            onEnd: function (evt) {
-                // Assert that the item moved is congruent
-                if (evt.items.length !== 0) return;
-
+            onEnd: function(evt) {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                if (!shelf) return;
 
                 // Get the item dragged (only one allowed)
                 let itemDragged = evt.item;
@@ -1220,7 +1204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Find dragged book
                 let bookDragged = shelf.books[itemIndex];
-                if (bookDragged === undefined) return;
 
                 // Get dragged pages
                 let pagesDragged = structuredClone(bookDragged.pages);
@@ -1251,7 +1234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     pagesToMove.splice(newIndex, 0, ...pagesDragged);
 
                     // Put the original book back in the correct position
-                    if(itemIndex >= bookList.children.length) {
+                    if (itemIndex >= bookList.children.length) {
                         bookList.appendChild(itemDragged);
                     }
                     else {
@@ -1278,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 });
 
                                 // Add the clone to the drop area list
-                                if(newIndex >= dropAreaList.children.length) {
+                                if (newIndex >= dropAreaList.children.length) {
                                     dropAreaList.appendChild(clone);
                                 }
                                 else {
@@ -1298,7 +1281,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Get the book where the pages are moved
                     const endBook = shelf.books.find(book => book.id === endBookId);
-                    if (!endBook) return;
 
                     // Check if the pages we are moving have the same ID as those in the book
                     let pagesIds = endBook.pages.map(page => page.id);
@@ -1344,13 +1326,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             handle: '.movePageHandler',
             animation: 150,
 
-            onEnd: function (evt) {
-                // Assert that the items moved are congruent
-                if (evt.items.length != evt.oldIndicies.length) return;
-
+            onEnd: function(evt) {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-                if (!shelf) return;
 
                 // Get all the items that were dragged
                 let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
@@ -1358,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Find dragged pages
                 let pagesDragged = Array.from(itemIndexes, index => pagesToMove[index]);
-                if ((pagesDragged.length === 0) || (pagesDragged.length !== itemsDragged.length)) return;
+                if (pagesDragged.length === 0) return;  // Nothing to do
 
                 // Remove pages from old indexes
                 pagesToMove = pagesToMove.filter(page => !pagesDragged.includes(page));
@@ -1376,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let newBookId;
                     do {
                         newBookId = generateUUID();
-                    } while(shelf.books.some(book => book.id === newBookId));
+                    } while (shelf.books.some(book => book.id === newBookId));
 
                     // Create default book title as 'Book X'
                     let defaultBookTitle = `Book ${shelf.books.length + 1}`;
@@ -1436,7 +1414,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Get the book where the pages are moved
                     const endBook = shelf.books.find(book => book.id === endBookId);
-                    if (!endBook) return;
 
                     // Check if the pages we are moving have the same ID as those in the book
                     let pagesIds = endBook.pages.map(page => page.id);
@@ -1488,11 +1465,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         function updatePageCount(bookId) {
             // Find the shelf
             const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-            if (!shelf) return;
 
             // Find the book
             const book = shelf.books.find(book => book.id === bookId);
-            if (!book) return;
 
             // Change text
             getBookElementById(bookId).querySelector('.pagesCount').textContent = `${book.pages.length} Page${book.pages.length !== 1 ? 's' : ''}`;
@@ -1502,15 +1477,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         function removeBook(bookId) {
             // Find the shelf
             const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-            if (!shelf) return;
 
             // Find the book index
             const bookIndex = shelf.books.findIndex(book => book.id === bookId);
-            if (bookIndex < 0) return;
 
             // Get HTML element
             const bookListItem = getBookElementById(bookId);
-            if (!bookListItem) return;
 
             // Remove the book
             bookListItem.parentElement.removeChild(bookListItem);
