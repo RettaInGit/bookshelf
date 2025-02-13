@@ -11,15 +11,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchBar = document.getElementById('searchBar');
     const themeToggleButton = document.getElementById('themeToggleButton');
     const settingsPageButton = document.getElementById('settingsPageButton');
+    const dropAreaCheckbox = document.getElementById('dropAreaCheckbox');
+    const dropAreaRemoveSelectedPagesButton = document.getElementById('dropAreaRemoveSelectedPagesButton');
+    const dropAreaList = document.getElementById('dropAreaList');
+    const dropAreaButton = document.getElementById('dropAreaButton');
     const settingsOverlay = document.getElementById('settingsOverlay');
     const settingsPage = document.getElementById('settingsPage');
     const bookList = document.getElementById('bookList');
     let selectedShelfId = "";
     let bookshelfData = [];
+    let pagesToMove = [];
     let bookshelfDataUpdated = false;
     let loadingBookshelfData = false;
-    let pagesToMove = [];  // TODO
-    let bookIdOfMovingPages = '';  // TODO
     let isSettingsPageOpen = false;
 
     // Get bookshelf saved data and display it
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             bookshelfDataUpdated = false;
         }
-    }, 2000);
+    }, 1000);
 
     // Event listener for messages from background.js
     chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -162,6 +165,83 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Close the settings page
             settingsPage.classList.remove('open');
             settingsOverlay.classList.remove('open');
+        }
+    });
+
+    // Event listener for the drop area checkbox
+    dropAreaCheckbox.addEventListener('change', () => {
+        Array.from(dropAreaList.children).forEach((child) => {
+            child.getPageCheckbox().checked = dropAreaCheckbox.checked;
+        });
+    });
+
+    // Event listener for the drop area remove selected page button
+    dropAreaRemoveSelectedPagesButton.addEventListener('click', () => {
+        // Get all checkboxes
+        let dropAreaCheckboxes = [];
+        Array.from(dropAreaList.children).forEach((child) => {
+            dropAreaCheckboxes.push(child.getPageCheckbox());
+        });
+
+        // Assert data compatibility
+        if (dropAreaCheckboxes.length !== pagesToMove.length) return;
+
+        // Collect the indices of pages to remove
+        let indicesToRemove = [];
+        dropAreaCheckboxes.forEach((checkbox, checkboxIndex) => {
+            if (checkbox.checked) {
+                indicesToRemove.push(checkboxIndex);
+            }
+        });
+
+        if (indicesToRemove.length === 0) {
+            alert('Please select at least one page to remove.');
+            return;
+        }
+
+        // Confirm to remove the pages
+        if (!confirm(`Are you sure you want to remove the selected page${indicesToRemove.length !== 1 ? 's' : ''}?`)) {
+            return;
+        }
+
+        // Remove pages starting from the highest index to avoid index shifting
+        indicesToRemove.sort((a, b) => b - a).forEach((index) => {
+            // Remove 'pageMoved' class
+            if (pagesToMove[index].shelfId === selectedShelfId) {
+                let pageList = Array.from(bookList.children).find(child => child.dataset.bookId === pagesToMove[index].bookId)?.getPageList();
+                if (pageList !== undefined) {
+                    Array.from(pageList.children).find(child => child.dataset.pageId === pagesToMove[index].id)?.classList.remove('pageMoved');
+                };
+            };
+
+            // Remove element
+            dropAreaList.removeChild(dropAreaList.children[index]);
+            pagesToMove.splice(index, 1);
+        });
+    });
+
+    // Event listener for the floating button
+    dropAreaButton.addEventListener('click', () => {
+        const mainPage = document.getElementById('mainPage');
+        const dropArea = document.getElementById('dropArea');
+        const dropAreaSpace = document.getElementById('dropAreaSpace');
+
+        if (dropArea.classList.contains('active')) {
+            // Close the drop area
+            dropArea.classList.remove('active');
+            mainPage.style.width = '100%';
+            dropAreaSpace.style.width = '0%';
+            setTimeout(() => {
+                dropArea.classList.add('hidden');
+            }, 300); // Wait for the transition to finish
+        } else {
+            // Open the drop area
+            dropArea.classList.remove('hidden');
+            setTimeout(() => {
+                dropArea.classList.add('active');
+                mainPage.style.width = '50%';
+                dropAreaSpace.style.width = '50%';
+            }, 10); // Small delay to ensure the removal of 'hidden' is processed
         }
     });
 
@@ -599,7 +679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookCheckbox.type = 'checkbox';
             bookCheckbox.className = 'bookCheckbox';
             bookCheckbox.name = 'bookCheckbox';
-            bookCheckbox.title = 'Select/Deselect All Pages in this Book';
+            bookCheckbox.title = 'Select/Deselect all pages in this book';
 
             // Toggle all checkboxes in a book
             bookCheckbox.addEventListener('change', () => {
@@ -633,7 +713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pageCheckboxes = getBookElementById(bookId).getAllPageCheckbox();
 
                 // Assert data compatibility
-                if (!(pageCheckboxes.length === book.pages.length)) {
+                if (pageCheckboxes.length !== book.pages.length) {
                     console.assert(false, `Assert error when restoring selected pages in ${bookId} book`);
                     return;
                 }
@@ -687,13 +767,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pageCheckboxes = pageList.getAllPageCheckbox();
 
                 // Assert data compatibility
-                if (!(pageCheckboxes.length === book.pages.length)) {
+                if (pageCheckboxes.length !== book.pages.length) {
                     console.assert(false, `Assert error when removing selected pages in ${bookId} book`);
                     return;
                 }
 
                 // Collect the indices of pages to remove
-                const indicesToRemove = [];
+                let indicesToRemove = [];
                 pageCheckboxes.forEach((checkbox, checkboxIndex) => {
                     if (checkbox.checked) {
                         indicesToRemove.push(checkboxIndex);
@@ -711,9 +791,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 // Remove pages starting from the highest index to avoid index shifting
-                indicesToRemove.sort((a, b) => b - a).forEach((pageIndex) => {
-                    pageList.removeChild(pageList.children[pageIndex]);
-                    book.pages.splice(pageIndex, 1);
+                indicesToRemove.sort((a, b) => b - a).forEach((index) => {
+                    // Remove the page from the moved ones too
+                    if (pagesToMove.length === dropAreaList.children.length) {  // Assert data compatibility
+                        let pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
+                        if (pageIndex !== -1) {
+                            dropAreaList.removeChild(dropAreaList.children[pageIndex]);
+                            pagesToMove.splice(pageIndex, 1);
+                        }
+                    };
+
+                    // Remove page
+                    pageList.removeChild(pageList.children[index]);
+                    book.pages.splice(index, 1);
                 });
 
                 // Remove the book if no pages are left
@@ -873,6 +963,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageListItem.dataset.pageId = page.id;
             pageListItem.style.display = page.title.toLowerCase().includes(currentSearchQuery) ? 'flex' : 'none';
 
+            // Add class to visualize that the page is moved
+            if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === page.id)) pageListItem.classList.add('pageMoved');
+
             // Create children elements
             const pageCheckbox = createPageCheckbox(bookId);
             const pageLink = createPageLink(page);
@@ -913,11 +1006,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             // Set sorting parameters for the pages
-            var startBookId = book.id;
+            let startBookId = book.id;
             Sortable.create(pageList, {
                 group: {
                     name: 'movePages',
-                    //pull: 'clone',
                 },
                 multiDrag: true,
                 selectedClass: 'pageSelected',
@@ -925,6 +1017,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 animation: 150,
 
                 onEnd: function(evt) {
+                    // Assert that the items moved are congruent
+                    if (evt.items.length != evt.oldIndicies.length) return;
+
                     // Find the shelf
                     const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
                     if (!shelf) return;
@@ -933,22 +1028,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const startBook = shelf.books.find(book => book.id === startBookId);
                     if (!startBook) return;
 
-                    // Get the ID of the pages that were dragged
-                    let idOfPagesDragged = [];
-                    if (evt.items.length > 0) {
-                        evt.items.forEach(item => {
-                            idOfPagesDragged.push(item.getPageId());
-                        });
-                    }
-                    else {
-                        idOfPagesDragged = [evt.item.dataset.pageId];
-                    }
+                    // Get all the items that were dragged
+                    let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
+                    let itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
 
                     // Find dragged pages in the start book
-                    let pagesDragged = startBook.pages.filter(page => idOfPagesDragged.includes(page.id));
-                    if (pagesDragged.length === 0) return;
+                    let pagesDragged = Array.from(itemIndexes, index => startBook.pages[index]);
+                    if (evt.to !== dropAreaList && pagesDragged.length === 0) return;
+                    if (pagesDragged.length !== itemsDragged.length) return;
 
-                    if (evt.to === bookList) {
+                    // Get new index
+                    let newIndex = evt.newIndex;
+
+                    // Move pages according to the destination
+                    if (evt.from === evt.to) {
+                        // Remove pages from old indexes
+                        startBook.pages = startBook.pages.filter(page => !pagesDragged.includes(page));
+
+                        // Add pages to new indexes
+                        startBook.pages.splice(newIndex, 0, ...pagesDragged);
+                    }
+                    else if (evt.to === bookList) {
                         // Create new book ID
                         let newBookId;
                         do {
@@ -958,9 +1058,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Create default book title as 'Book X'
                         let defaultBookTitle = `Book ${shelf.books.length + 1}`;
 
-                        // Get new book index
-                        let newBookIndex = evt.newIndex - (evt.items.length === 0 ? 0 : evt.items.findIndex(item => item === evt.item));
-
                         // Create the new book
                         const newBook = {
                             id: newBookId,
@@ -969,27 +1066,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                             collapsed: false
                         };
 
+                        // Update moved pages
+                        pagesDragged.forEach(page => {
+                            let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
+                            if (itemMoved !== undefined) {
+                                itemMoved.bookId = newBookId;
+                            }
+                        });
+
                         // Add book
-                        shelf.books.splice(newBookIndex, 0, newBook);
+                        shelf.books.splice(newIndex, 0, newBook);
 
                         // Remove wrongly displaced pages
-                        if (evt.items.length > 0) {
-                            evt.items.forEach(item => bookList.removeChild(item));
-                        }
-                        else {
-                            bookList.removeChild(evt.item);
-                        }
+                        itemsDragged.forEach(item => bookList.removeChild(item));
 
                         // Draw new book
-                        if (newBookIndex === shelf.books.length - 1) {
+                        if (newIndex === shelf.books.length - 1) {
                             bookList.appendChild(createBookListItem(newBook));
                         }
                         else {
-                            bookList.insertBefore(createBookListItem(newBook), bookList.children[newBookIndex]);
+                            bookList.insertBefore(createBookListItem(newBook), bookList.children[newIndex]);
                         }
 
                         // Remove pages from start book
-                        startBook.pages = startBook.pages.filter(page => !idOfPagesDragged.includes(page.id));
+                        startBook.pages = startBook.pages.filter(page => !pagesDragged.includes(page));
                         if (startBook.pages.length === 0) {
                             removeBook(startBookId);  // Remove the book because no pages are left
                         }
@@ -997,15 +1097,64 @@ document.addEventListener('DOMContentLoaded', async () => {
                             updatePageCount(startBookId);  // Update pages count
                         }
                     }
-                    else if (evt.from === evt.to) {
-                        // Get new page index
-                        let newPageIndex = evt.newIndex - (evt.items.length === 0 ? 0 : evt.items.findIndex(item => item === evt.item));
+                    else if (evt.to === dropAreaList) {
+                        // Filter out the pages that are already in 'pagesToMove'
+                        let filteringIndices = [];
+                        pagesDragged = structuredClone(pagesDragged);
+                        pagesDragged.forEach((page, pageIndex) => {
+                            if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id)) {
+                                filteringIndices.push(pageIndex);
+                            }
+                            else {
+                                page.shelfId = selectedShelfId;
+                                page.bookId = startBookId;
+                            }
+                        });
+                        pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndices.includes(pageIndex));
 
-                        // Remove pages from old indexes
-                        startBook.pages = startBook.pages.filter(page => !idOfPagesDragged.includes(page.id));
+                        // Save pages dragged
+                        pagesToMove.splice(newIndex, 0, ...pagesDragged);
 
-                        // Add pages to new indexes
-                        startBook.pages.splice(newPageIndex, 0, ...pagesDragged);
+                        itemsDragged.forEach((item, itemIndex) => {
+                            // Remove the 'pageSelected' class
+                            item.classList.remove('pageSelected');
+
+                            if (pagesDragged.length !== 0 && !filteringIndices.includes(itemIndex)) {
+                                // Create a clone of the dragged item
+                                let clone = item.cloneNode(true);
+                                let cloneCheckbox = clone.children[0];  // TODO: change this hack
+
+                                // Add functionality to the clone
+                                cloneCheckbox.addEventListener('change', () => {
+                                    let dropAreaCheckboxes = [];
+                                    Array.from(dropAreaList.children).forEach((child) => {
+                                        dropAreaCheckboxes.push(child.getPageCheckbox());
+                                    });
+
+                                    const allChecked = dropAreaCheckboxes.every(checkbox => checkbox.checked);
+                                    const anyChecked = dropAreaCheckboxes.some(checkbox => checkbox.checked);
+
+                                    dropAreaCheckbox.checked = allChecked;
+                                    dropAreaCheckbox.indeterminate = !allChecked && anyChecked;
+                                })
+                                clone.getPageCheckbox = function () { return cloneCheckbox; };
+
+                                // Add the clone to the drop area list
+                                if(newIndex >= evt.to.children.length) {
+                                    evt.to.appendChild(clone);
+                                }
+                                else {
+                                    evt.to.insertBefore(clone, evt.to.children[newIndex]);
+                                }
+                                newIndex++;
+
+                                // Add class to visualize which items are moved
+                                item.classList.add('pageMoved');
+                            }
+
+                            // Put the original item back in the main list
+                            evt.from.insertBefore(item, evt.from.children[itemIndexes[itemIndex]]);
+                        });
                     }
                     else {
                         // Get ID of the book where the pages are moved
@@ -1016,27 +1165,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (!endBook) return;
 
                         // Check if the pages we are moving have the same ID as those in the book
-                        let pagesIds;
-                        do {
-                            // Get pages IDs
-                            pagesIds = endBook.pages.map(page => page.id);
+                        let pagesIds = endBook.pages.map(page => page.id);
+                        pagesDragged.forEach(page => {
+                            let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
 
-                            // Check for duplicated IDs
-                            pagesDragged.forEach(page => {
-                                if (pagesIds.includes(page.id)) {
-                                    page.id = generateUUID();  // generate new ID
-                                }
-                            });
-                        } while(pagesDragged.some(page => pagesIds.includes(page.id)));
+                            while (pagesIds.includes(page.id)) {
+                                page.id = generateUUID();  // generate new ID
+                            };
 
-                        // Get new page index
-                        let newPageIndex = evt.newIndex - (evt.items.length === 0 ? 0 : evt.items.findIndex(item => item === evt.item));
+                            if (itemMoved !== undefined) {
+                                itemMoved.bookId = endBookId;
+                                itemMoved.id = page.id;
+                            }
+                        });
 
                         // Add pages
-                        endBook.pages.splice(newPageIndex, 0, ...pagesDragged);
+                        endBook.pages.splice(newIndex, 0, ...pagesDragged);
 
                         // Remove pages from start book
-                        startBook.pages = startBook.pages.filter(page => !idOfPagesDragged.includes(page.id));
+                        startBook.pages = startBook.pages.filter(page => !pagesDragged.includes(page));
                         if (startBook.pages.length === 0) {
                             removeBook(startBookId);  // Remove the book because no pages are left
                         }
@@ -1094,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Create the elements based on the data
         shelfList.innerHTML = '';
         bookshelfData.forEach((shelf) => {
-            shelfList.appendChild(createShelfListItem(shelf));
+            shelfList.appendShelfListItem(shelf);
 
             if (shelf.id === selectedShelfId) {
                 shelf.books.forEach((book) => {
@@ -1108,11 +1255,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             handle: '.moveShelfHandler',
             animation: 150,
 
-            onEnd: function(data) {
-                if( (data.oldIndex >= bookshelfData.length) || (data.newIndex >= bookshelfData.length) ) return;
+            onEnd: function(evt) {
+                if ((evt.oldIndex >= bookshelfData.length) || (evt.newIndex >= bookshelfData.length)) return;
 
                 // Move shelf in the new position
-                bookshelfData.splice(data.newIndex, 0, bookshelfData.splice(data.oldIndex, 1)[0]);
+                if (evt.newIndex !== evt.oldIndex) bookshelfData.splice(evt.newIndex, 0, bookshelfData.splice(evt.oldIndex, 1)[0]);
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
@@ -1127,88 +1274,367 @@ document.addEventListener('DOMContentLoaded', async () => {
         Sortable.create(bookList, {
             group: {
                 name: 'movePages',
-                pull: false,  // disable pulling from the list
             },
-            sort: false,  // disable sorting
             swapThreshold: .9,
+            animation: 150,
+
+            onEnd: function (evt) {
+                // Assert that the item moved is congruent
+                if (evt.items.length !== 0) return;
+
+                // Find the shelf
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+                if (!shelf) return;
+
+                // Get the item dragged (only one allowed)
+                let itemDragged = evt.item;
+                let itemIndex = evt.oldIndex;
+
+                // Find dragged book
+                let bookDragged = shelf.books[itemIndex];
+                if (bookDragged === undefined) return;
+
+                // Get dragged pages
+                let pagesDragged = structuredClone(bookDragged.pages);
+
+                // Get new index
+                let newIndex = evt.newIndex;
+
+                // Move pages according to the destination
+                if (evt.from === evt.to) {
+                    // Move book in the new position
+                    if (newIndex !== itemIndex) shelf.books.splice(newIndex, 0, shelf.books.splice(itemIndex, 1)[0]);
+                }
+                else if (evt.to === dropAreaList) {
+                    // Filter out the pages that are already in 'pagesToMove'
+                    let filteringIndices = [];
+                    pagesDragged.forEach((page, pageIndex) => {
+                        if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id)) {
+                            filteringIndices.push(pageIndex);
+                        }
+                        else {
+                            page.shelfId = selectedShelfId;
+                            page.bookId = bookDragged.id;
+                        }
+                    });
+                    pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndices.includes(pageIndex));
+
+                    // Save pages dragged
+                    pagesToMove.splice(newIndex, 0, ...pagesDragged);
+
+                    // Put the original book back in the correct position
+                    if(itemIndex >= bookList.children.length) {
+                        bookList.appendChild(itemDragged);
+                    }
+                    else {
+                        bookList.insertBefore(itemDragged, bookList.children[itemIndex]);
+                    }
+
+                    // Add all the book pages in the drop area list
+                    if (pagesDragged.length !== 0) {
+                        itemDragged.getAllPageListItem().forEach((page, pageIndex) => {
+                            if (!filteringIndices.includes(pageIndex)) {
+                                // Create a clone of the page
+                                let clone = page.cloneNode(true);
+                                let cloneCheckbox = clone.children[0];  // TODO: change this hack
+
+                                // Add functionality to the clone
+                                cloneCheckbox.addEventListener('change', () => {
+                                    let dropAreaCheckboxes = [];
+                                    Array.from(dropAreaList.children).forEach((child) => {
+                                        dropAreaCheckboxes.push(child.getPageCheckbox());
+                                    });
+
+                                    const allChecked = dropAreaCheckboxes.every(checkbox => checkbox.checked);
+                                    const anyChecked = dropAreaCheckboxes.some(checkbox => checkbox.checked);
+
+                                    dropAreaCheckbox.checked = allChecked;
+                                    dropAreaCheckbox.indeterminate = !allChecked && anyChecked;
+                                })
+                                clone.getPageCheckbox = function () { return cloneCheckbox; };
+
+                                // Add the clone to the drop area list
+                                if(newIndex >= dropAreaList.children.length) {
+                                    dropAreaList.appendChild(clone);
+                                }
+                                else {
+                                    dropAreaList.insertBefore(clone, dropAreaList.children[newIndex]);
+                                }
+                                newIndex++;
+
+                                // Add class to visualize which items are moved
+                                page.classList.add('pageMoved');
+                            }
+                        });
+                    }
+                }
+                else {
+                    // Get ID of the book where the pages are moved
+                    let endBookId = Array.from(bookList.children).filter(child => child.getPageList() === evt.to)[0].dataset.bookId;
+
+                    // Get the book where the pages are moved
+                    const endBook = shelf.books.find(book => book.id === endBookId);
+                    if (!endBook) return;
+
+                    // Check if the pages we are moving have the same ID as those in the book
+                    let pagesIds = endBook.pages.map(page => page.id);
+                    pagesDragged.forEach(page => {
+                        let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id);
+
+                        while (pagesIds.includes(page.id)) {
+                            page.id = generateUUID();  // generate new ID
+                        };
+
+                        if (itemMoved !== undefined) {
+                            itemMoved.bookId = endBookId;
+                            itemMoved.id = page.id;
+                        }
+                    });
+
+                    // Add pages
+                    endBook.pages.splice(newIndex, 0, ...pagesDragged);
+
+                    // Remove the original book
+                    shelf.books.splice(itemIndex, 1);
+
+                    // Redraw the end book
+                    evt.to.innerHTML = '';
+                    endBook.pages.forEach((page) => {
+                        evt.to.appendChild(createPageListItem(page, endBookId));
+                    });
+                    updatePageCount(endBookId);  // Update pages count
+                }
+
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
+            },
+        });
+
+        // Initialize Sortable for the drop list
+        Sortable.create(dropAreaList, {
+            group: {
+                name: 'movePages',
+            },
+            multiDrag: true,
+            selectedClass: 'pageSelected',
+            handle: '.movePageHandler',
+            animation: 150,
+
+            onEnd: function (evt) {
+                // Assert that the items moved are congruent
+                if (evt.items.length != evt.oldIndicies.length) return;
+
+                // Find the shelf
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+                if (!shelf) return;
+
+                // Get all the items that were dragged
+                let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
+                let itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
+
+                // Find dragged pages
+                let pagesDragged = Array.from(itemIndexes, index => pagesToMove[index]);
+                if ((pagesDragged.length === 0) || (pagesDragged.length !== itemsDragged.length)) return;
+
+                // Remove pages from old indexes
+                pagesToMove = pagesToMove.filter(page => !pagesDragged.includes(page));
+
+                // Get new index
+                let newIndex = evt.newIndex;
+
+                // Move pages according to the destination
+                if (evt.from === evt.to) {
+                    // Add pages to new indexes
+                    pagesToMove.splice(newIndex, 0, ...pagesDragged);
+                }
+                else if (evt.to === bookList) {
+                    // Create new book ID
+                    let newBookId;
+                    do {
+                        newBookId = generateUUID();
+                    } while(shelf.books.some(book => book.id === newBookId));
+
+                    // Create default book title as 'Book X'
+                    let defaultBookTitle = `Book ${shelf.books.length + 1}`;
+
+                    // Create the new book
+                    const newBook = {
+                        id: newBookId,
+                        title: defaultBookTitle,
+                        pages: structuredClone(pagesDragged.map((page) => {
+                            const { bookId, shelfId, ...newPage } = page;
+                            return newPage;
+                        })),
+                        collapsed: false
+                    };
+
+                    // Add book
+                    shelf.books.splice(newIndex, 0, newBook);
+
+                    // Remove wrongly displaced pages
+                    itemsDragged.forEach(item => bookList.removeChild(item));
+
+                    // Draw new book
+                    if (newIndex === shelf.books.length - 1) {
+                        bookList.appendChild(createBookListItem(newBook));
+                    }
+                    else {
+                        bookList.insertBefore(createBookListItem(newBook), bookList.children[newIndex]);
+                    }
+
+                    // Remove pages from other books
+                    pagesDragged.forEach((page) => {
+                        // Remove data
+                        const startShelf = bookshelfData.find(shelf => shelf.id === page.shelfId);
+                        const startBook = startShelf?.books.find(book => book.id === page.bookId);
+                        startBook.pages = startBook?.pages.filter(item => item.id !== page.id);
+
+                        // Remove element
+                        if (page.shelfId === selectedShelfId) {
+                            if (startBook.pages.length === 0) {
+                                removeBook(page.bookId);  // Remove the book because no pages are left
+                            }
+                            else {
+                                let pageListElem = getBookElementById(page.bookId)?.getPageList();
+                                let pageElem = pageListElem?.getAllPageListItem().find(elem => elem.getPageId() === page.id);
+                                pageListElem?.removeChild(pageElem ?? {});
+
+                                updatePageCount(page.bookId);  // Update pages count
+                            }
+                        }
+                    });
+
+                    // Hide the message (when the new book is dropped in an empty shelf)
+                    displayResultMessage();
+                }
+                else {
+                    // Get ID of the book where the pages are moved
+                    let endBookId = Array.from(bookList.children).filter(child => child.getPageList() === evt.to)[0].dataset.bookId;
+
+                    // Get the book where the pages are moved
+                    const endBook = shelf.books.find(book => book.id === endBookId);
+                    if (!endBook) return;
+
+                    // Check if the pages we are moving have the same ID as those in the book
+                    let pagesIds = endBook.pages.map(page => page.id);
+                    pagesDragged.forEach(page => {
+                        // Remove data from the original book
+                        const startShelf = bookshelfData.find(shelf => shelf.id === page.shelfId);
+                        const startBook = startShelf?.books.find(book => book.id === page.bookId);
+                        startBook.pages = startBook?.pages.filter(item => item.id !== page.id);
+
+                        // Remove element from the original book
+                        if (page.shelfId === selectedShelfId) {
+                            if (startBook.pages.length === 0) {
+                                removeBook(page.bookId);  // Remove the book because no pages are left
+                            }
+                            else {
+                                let pageListElem = getBookElementById(page.bookId)?.getPageList();
+                                let pageElem = pageListElem?.getAllPageListItem().find(elem => elem.getPageId() === page.id);
+                                pageListElem?.removeChild(pageElem ?? {});
+
+                                updatePageCount(page.bookId);  // Update pages count
+                            }
+                        }
+
+                        // generate new ID
+                        while (pagesIds.includes(page.id)) {
+                            page.id = generateUUID();
+                        };
+                    });
+
+                    // Add pages
+                    endBook.pages.splice(newIndex, 0, ...pagesDragged);
+
+                    // Redraw only the end book
+                    evt.to.innerHTML = '';
+                    endBook.pages.forEach((page) => {
+                        evt.to.appendChild(createPageListItem(page, endBookId));
+                    });
+                    updatePageCount(endBookId);  // Update pages count
+                }
+
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
+            }
         });
 
         // Display a message if no pages match
         displayResultMessage();
-    }
 
-    // Function to update pages count
-    function updatePageCount(bookId) {
-        // Find the shelf
-        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-        if (!shelf) return;
+        // Function to update pages count
+        function updatePageCount(bookId) {
+            // Find the shelf
+            const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+            if (!shelf) return;
 
-        // Find the book
-        const book = shelf.books.find(book => book.id === bookId);
-        if (!book) return;
+            // Find the book
+            const book = shelf.books.find(book => book.id === bookId);
+            if (!book) return;
 
-        // Get HTML elements
-        const pagesCount = getBookElementById(bookId).getPagesCount();
+            // Get HTML elements
+            const pagesCount = getBookElementById(bookId).getPagesCount();
 
-        // Change text
-        pagesCount.textContent = `${book.pages.length} Page${book.pages.length !== 1 ? 's' : ''}`;
-    }
-
-    // Function to remove an entire page book
-    function removeBook(bookId) {
-        // Find the shelf
-        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-        if (!shelf) return;
-
-        // Find the book index
-        const bookIndex = shelf.books.findIndex(book => book.id === bookId);
-        if (bookIndex < 0) return;
-
-        // Get HTML element
-        const bookListItem = getBookElementById(bookId);
-        if (!bookListItem) return;
-
-        // Remove the book
-        bookListItem.parentElement.removeChild(bookListItem);
-        shelf.books.splice(bookIndex, 1);
-
-        // Display a message if there are no pages
-        displayResultMessage();
-
-        // Save the updated bookshelfData
-        saveBookshelfDataToStorage();
-    }
-
-    // Display a message if there are no pages visible in the page
-    function displayResultMessage() {
-        // Find the shelf
-        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-
-        // Get HTML elements
-        const resultMessage = document.getElementById('resultMessage');
-        const bookListItems = document.getElementsByClassName('bookListItem');
-
-        // Check if any book is visible
-        const anyBooksVisible = Object.values(bookListItems).some(book => book.style.display === 'grid');
-
-        // Check if the data is correct
-        if (!shelf) {
-            resultMessage.style.display = 'block';
-            resultMessage.textContent = 'Error when loading the shelf. Try to reload the extension.';
+            // Change text
+            pagesCount.textContent = `${book.pages.length} Page${book.pages.length !== 1 ? 's' : ''}`;
         }
-        // Check if there are books to visualize
-        else if (shelf.books.length === 0) {
-            resultMessage.style.display = 'block';
-            resultMessage.textContent = 'No pages saved. Try adding some.';
+
+        // Function to remove an entire page book
+        function removeBook(bookId) {
+            // Find the shelf
+            const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+            if (!shelf) return;
+
+            // Find the book index
+            const bookIndex = shelf.books.findIndex(book => book.id === bookId);
+            if (bookIndex < 0) return;
+
+            // Get HTML element
+            const bookListItem = getBookElementById(bookId);
+            if (!bookListItem) return;
+
+            // Remove the book
+            bookListItem.parentElement.removeChild(bookListItem);
+            shelf.books.splice(bookIndex, 1);
+
+            // Display a message if there are no pages
+            displayResultMessage();
+
+            // Save the updated bookshelfData
+            saveBookshelfDataToStorage();
         }
-        // Check if any book is visible
-        else if (!anyBooksVisible) {
-            resultMessage.style.display = 'block';
-            resultMessage.textContent = 'No pages match your search.';
-        }
-        else {
-            resultMessage.style.display = 'none';
-            resultMessage.textContent = '';
+
+        // Display a message if there are no pages visible in the page
+        function displayResultMessage() {
+            // Find the shelf
+            const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+
+            // Get HTML elements
+            const resultMessage = document.getElementById('resultMessage');
+            const bookListItems = document.getElementsByClassName('bookListItem');
+
+            // Check if any book is visible
+            const anyBooksVisible = Object.values(bookListItems).some(book => book.style.display === 'grid');
+
+            // Check if the data is correct
+            if (!shelf) {
+                resultMessage.style.display = 'block';
+                resultMessage.textContent = 'Error when loading the shelf. Try to reload the extension.';
+            }
+            // Check if there are books to visualize
+            else if (shelf.books.length === 0) {
+                resultMessage.style.display = 'block';
+                resultMessage.textContent = 'No pages saved. Try adding some.';
+            }
+            // Check if any book is visible
+            else if (!anyBooksVisible) {
+                resultMessage.style.display = 'block';
+                resultMessage.textContent = 'No pages match your search.';
+            }
+            else {
+                resultMessage.style.display = 'none';
+                resultMessage.textContent = '';
+            }
         }
     }
 });

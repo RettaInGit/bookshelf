@@ -298,8 +298,10 @@ svg path {
     width: 100%;
     display: flex;
     flex-direction: column;
+    flex: 1;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 #settingsOverlay {
@@ -360,7 +362,11 @@ svg path {
 }
 
 .pageSelected {
-    border: 2px solid var(--color-text-accent);
+    border: 2px solid var(--color-text-accent) !important;
+}
+
+.pageMoved {
+    border: 1px dashed var(--color-text-accent);
 }
 
 .pageLink {
@@ -368,6 +374,9 @@ svg path {
     color: var(--color-text-secondary);
     font-size: 16px;
     flex-grow: 1;
+    /* white-space: nowrap; */
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
 }
 
 .pageLink:hover {
@@ -419,7 +428,7 @@ svg path {
     margin-top: 5px;
 }
 
-.bookCheckbox {
+.bookCheckbox, #dropAreaCheckbox {
     margin-right: 10px;
 }
 
@@ -456,4 +465,74 @@ svg path {
 
 .restoreSelectedPagesButton:hover {
     background-color: var(--color-button-restore-hover);
+}
+
+#dropAreaButton {
+    position: fixed;
+    background-color: var(--color-header-bg);
+    bottom: 20px;
+    right: 20px;
+    width: 150px;
+    height: 150px;
+    padding: 0;
+    margin: 0;
+    border-radius: 10%;
+    font-size: 48px;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#dropAreaButton:hover {
+    transform: scale(1.05);
+}
+
+#dropAreaSpace {
+    width: 0%;
+    transition: all 0.3s ease;
+}
+
+#dropArea {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    position: fixed;
+    bottom: 190px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: var(--color-page-bg);
+    border: 1px solid var(--color-border-page);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    opacity: 0;
+}
+
+#dropArea.active {
+    width: calc(50% - 40px); /* 50% of the screen width minus some padding */
+    height: calc(100% - 290px); /* Full height minus button height and some padding */
+    opacity: 1;
+}
+
+#dropArea.hidden {
+    display: none;
+}
+
+#dropAreaHeader {
+    display: flex;
+    padding: 15px;
+    background-color: var(--color-book-bg);
+}
+
+#dropAreaList {
+    display: inline-block;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
 }
