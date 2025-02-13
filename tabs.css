@@ -374,9 +374,6 @@ svg path {
     color: var(--color-text-secondary);
     font-size: 16px;
     flex-grow: 1;
-    /* white-space: nowrap; */
-    /* overflow: hidden; */
-    /* text-overflow: ellipsis; */
 }
 
 .pageLink:hover {
@@ -514,8 +511,8 @@ svg path {
 }
 
 #dropArea.active {
-    width: calc(50% - 40px); /* 50% of the screen width minus some padding */
-    height: calc(100% - 290px); /* Full height minus button height and some padding */
+    width: calc(50% - 40px);
+    height: calc(100% - 290px);
     opacity: 1;
 }
 
