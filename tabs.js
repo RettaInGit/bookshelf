@@ -686,15 +686,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const book = shelf.books.find(book => book.id === bookId);
 
                 // Get HTML elements
-                const pageCheckboxes = getBookElementById(bookId).querySelectorAll('.pageCheckbox');
+                const bookElem = getBookElementById(bookId);
+                const pageCheckboxes = bookElem.querySelectorAll('.pageCheckbox');
+
+                // Get the indexes of the pages selected
+                const pagesIndexes = Array.from(pageCheckboxes).map((checkbox, index) => (checkbox.checked ? index : -1)).filter((index) => index !== -1);
 
                 // Collect the pages to restore
-                const pagesToRestore = [];
-                pageCheckboxes.forEach((checkbox, checkboxIndex) => {
-                    if (checkbox.checked) {
-                        pagesToRestore.push(book.pages[checkboxIndex]);
-                    }
-                });
+                const pagesToRestore = Array.from(pagesIndexes, index => book.pages[index]);
 
                 if (pagesToRestore.length === 0) {
                     alert('Please select at least one page to restore.');
@@ -712,6 +711,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                         url: page.url
                     });
                 });
+
+                // Remove the pages from the book
+                if (!(book.locked)) {
+                    if (pagesToRestore.length === book.pages.length) {
+                        // Get the index of the book
+                        let bookIndex = shelf.books.indexOf(book);
+
+                        // Remove the book
+                        shelf.books.splice(bookIndex, 1);
+                        bookElem.parentElement.removeChild(bookElem);
+
+                        // Display a message if there are no pages
+                        displayResultMessage();
+                    }
+                    else {
+                        // Get the page list element
+                        let pageListElem = bookElem.querySelector(".pageList");
+
+                        // Remove the pages
+                        pagesIndexes.sort((a, b) => b - a).forEach((index) => {
+                            book.pages.splice(index, 1);
+                            pageListElem.removeChild(pageListElem.children[index]);
+                        });
+
+                        // Uncheck the drop area checkbox
+                        let bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                        bookCheckboxElem.checked = false;
+                        bookCheckboxElem.indeterminate = false;
+
+                        // Update pages count
+                        updatePageCount(book.id);
+                    }
+
+                    // Save the updated bookshelfData
+                    saveBookshelfDataToStorage();
+                }
             });
 
             return restoreSelectedPagesButton;
@@ -773,26 +808,87 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Remove the book if no pages are left
                 if (book.pages.length === 0) {
                     removeBook(bookId);
-                    return;
                 }
-
+                else {
                 // Uncheck the drop area checkbox
-                let bookCheckbox = bookElem.querySelector('.bookCheckbox');
-                bookCheckbox.checked = false;
-                bookCheckbox.indeterminate = false;
+                    let bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                    bookCheckboxElem.checked = false;
+                    bookCheckboxElem.indeterminate = false;
 
                 // Update pages count
                 updatePageCount(bookId);
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
+                }
             });
 
             return removeSelectedPagesButton;
         }
 
+        // Function to create a divider between the elements in the book bottom header
+        function createBookHeaderBottomDivider() {
+            const bookHeaderBottomDivider = document.createElement('div');
+            bookHeaderBottomDivider.className = 'bookHeaderBottomDivider';
+
+            return bookHeaderBottomDivider;
+        }
+
+        // Function to create the book lock
+        function createBookLock(bookId, bookLocked) {
+            const bookLock = document.createElement('button');
+            bookLock.title = 'Lock the book';
+            bookLock.className = 'bookLock';
+
+            // Create SVG element
+            const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgElem.setAttribute('width', '22px');
+            svgElem.setAttribute('height', '28px');
+            const pathElem = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElem.setAttribute('style', 'paint-order:fill;fill-rule:evenodd');
+            if (bookLocked) {
+                svgElem.setAttribute('viewBox', '393.836 323.775 22 27.999');
+                pathElem.setAttribute('d', 'M411.836 335.774v-4.706c0-3.833-2.953-7.175-6.785-7.29a7 7 0 0 0-7.215 6.996v5h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-10a3 3 0 0 0-3-3zm-3 0h-8v-5c0-3.079 3.334-5.004 6-3.464 1.238.714 2 2.035 2 3.464zm-2 6c.001-1.54-1.665-2.503-2.998-1.734a2 2 0 0 0-.132 3.383l-.631 3.155a1 1 0 0 0 .981 1.196h1.56a1 1 0 0 0 .981-1.196l-.631-3.155c.525-.361.87-.964.87-1.649');
+            }
+            else {
+                svgElem.setAttribute('viewBox', '362.143 323.843 22 27.999');
+                pathElem.setAttribute('d', 'M380.143 335.842v-4.706c0-3.833-2.953-7.175-6.785-7.29a7 7 0 0 0-7.215 6.996v5h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-10a3 3 0 0 0-3-3zm-3 0h-8v-5c0-3.079 3.334-5.004 6-3.464 1.238.714 2 2.035 2 3.464zm4 15h-16a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2m-6-9c.001-1.54-1.665-2.503-2.998-1.734a2 2 0 0 0-.132 3.383l-.631 3.155a1 1 0 0 0 .981 1.196h1.56a1 1 0 0 0 .981-1.196l-.631-3.155c.525-.361.87-.964.87-1.649');
+            }
+
+            // Append elements in the correct order
+            svgElem.appendChild(pathElem);
+            bookLock.appendChild(svgElem);
+
+            // Lock or unlock the book
+            bookLock.addEventListener('click', () => {
+                // Find the shelf
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+
+                // Find the book
+                const book = shelf.books.find(book => book.id === bookId);
+
+                // Change the locking value
+                book.locked = !(book.locked)
+
+                // Change lock icon
+                if (book.locked) {
+                    svgElem.setAttribute('viewBox', '393.836 323.775 22 27.999');
+                    pathElem.setAttribute('d', 'M411.836 335.774v-4.706c0-3.833-2.953-7.175-6.785-7.29a7 7 0 0 0-7.215 6.996v5h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-10a3 3 0 0 0-3-3zm-3 0h-8v-5c0-3.079 3.334-5.004 6-3.464 1.238.714 2 2.035 2 3.464zm-2 6c.001-1.54-1.665-2.503-2.998-1.734a2 2 0 0 0-.132 3.383l-.631 3.155a1 1 0 0 0 .981 1.196h1.56a1 1 0 0 0 .981-1.196l-.631-3.155c.525-.361.87-.964.87-1.649');
+                }
+                else {
+                    svgElem.setAttribute('viewBox', '362.143 323.843 22 27.999');
+                    pathElem.setAttribute('d', 'M380.143 335.842v-4.706c0-3.833-2.953-7.175-6.785-7.29a7 7 0 0 0-7.215 6.996v5h-1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-10a3 3 0 0 0-3-3zm-3 0h-8v-5c0-3.079 3.334-5.004 6-3.464 1.238.714 2 2.035 2 3.464zm4 15h-16a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2m-6-9c.001-1.54-1.665-2.503-2.998-1.734a2 2 0 0 0-.132 3.383l-.631 3.155a1 1 0 0 0 .981 1.196h1.56a1 1 0 0 0 .981-1.196l-.631-3.155c.525-.361.87-.964.87-1.649');
+                }
+
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
+            });
+
+            return bookLock;
+        }
+
         // Function to create the bottom part of a book header
-        function createBookHeaderBottom(bookCollapsed, bookId) {
+        function createBookHeaderBottom(bookId, bookCollapsed, bookLocked) {
             const bookHeaderBottom = document.createElement('div');
             bookHeaderBottom.className = 'bookHeaderBottom';
             bookHeaderBottom.style.display = bookCollapsed ? 'none' : 'flex';
@@ -801,6 +897,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookHeaderBottom.appendChild(createBookCheckbox(bookId));
             bookHeaderBottom.appendChild(createRestoreSelectedPagesButton(bookId));
             bookHeaderBottom.appendChild(createRemoveSelectedPagesButton(bookId));
+            bookHeaderBottom.appendChild(createBookHeaderBottomDivider());
+            bookHeaderBottom.appendChild(createBookLock(bookId, bookLocked));
 
             return bookHeaderBottom;
         }
@@ -813,7 +911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Append elements to the header in the desired order
             bookHeader.appendChild(createBookHeaderTop(book));
-            bookHeader.appendChild(createBookHeaderBottom(book.collapsed, bookId));
+            bookHeader.appendChild(createBookHeaderBottom(bookId, book.collapsed, book.locked));
 
             // Add event listener
             bookHeader.addEventListener('click', (event) => {
@@ -888,6 +986,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageLink.textContent = page.title;
             pageLink.target = '_blank';
             pageLink.title = page.url;
+
+            let pageId = page.id;
+            pageLink.addEventListener('click', () => {
+                // Get the book element
+                let bookElem = pageLink.closest('.bookListItem');
+
+                // Find the shelf
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+
+                // Find the book
+                const book = shelf.books.find(book => book.id === bookElem.dataset.bookId);
+
+                // Remove the page from the book
+                if (!(book.locked)) {
+                    if (book.pages.length === 1) {  // It means that only this page is in the book
+                        // Get the index of the book
+                        let bookIndex = shelf.books.indexOf(book);
+
+                        // Remove the book
+                        shelf.books.splice(bookIndex, 1);
+                        bookElem.parentElement.removeChild(bookElem);
+                    }
+                    else {
+                        // Get the index of the page
+                        let pageIndex = book.pages.findIndex(page => page.id === pageId);
+
+                        // Get the page list element
+                        let pageListElem = pageLink.closest('.pageList');
+
+                        // Remove the page
+                        book.pages.splice(pageIndex, 1);
+                        pageListElem.removeChild(pageListElem.children[pageIndex]);
+                    }
+
+                    // Save the updated bookshelfData
+                    saveBookshelfDataToStorage();
+                }
+            });
 
             return pageLink;
         }
@@ -994,7 +1130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             id: newBookId,
                             title: defaultBookTitle,
                             pages: structuredClone(pagesDragged),
-                            collapsed: false
+                            collapsed: false,
+                            locked: false
                         };
 
                         // Update moved pages
@@ -1367,7 +1504,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const { bookId, shelfId, ...newPage } = page;
                             return newPage;
                         })),
-                        collapsed: false
+                        collapsed: false,
+                        locked: false
                     };
 
                     // Add book

@@ -154,7 +154,8 @@ async function savePages(tabs) {
     id: newBookId,
     title: defaultBookTitle,
     pages: newPages,
-    collapsed: false
+    collapsed: false,
+    locked: false
   };
   shelf.books.unshift(newBook);
 
