@@ -501,6 +501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Update the selected shelf title
                     changeSelectedShelfTitle(bookshelfData[0].title);
+                    shelfList.children[0].querySelector('.shelfTitle').textContent = bookshelfData[0].title;
 
                     // Save updated shelf
                     saveBookshelfDataToStorage();
@@ -551,7 +552,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             editBookTitleButton.appendChild(svgElem);
 
             // Toggle between edit and save modes for the book title
-            editBookTitleButton.addEventListener('click', () => {
+            editBookTitleButton.addEventListener('click', (event) => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
@@ -596,25 +597,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (newTitle === '') {
                         alert('Book title cannot be empty.');
                         bookTitle.focus();
-                        return;
                     }
+                    else {
+                        // Update the book title
+                        book.title = newTitle;
 
-                    // Update the book title
-                    book.title = newTitle;
+                        // Save the updated book to storage
+                        saveBookshelfDataToStorage();
 
-                    // Save the updated book to storage
-                    saveBookshelfDataToStorage();
+                        // Disable contentEditable
+                        bookTitle.contentEditable = false;
 
-                    // Disable contentEditable
-                    bookTitle.contentEditable = false;
+                        // Reset the edit button
+                        editBookTitleButton.title = 'Edit book title';
+                        editBookTitleButton.dataset.mode = 'edit';
 
-                    // Reset the edit button
-                    editBookTitleButton.title = 'Edit book title';
-                    editBookTitleButton.dataset.mode = 'edit';
-
-                    // Remove keypress handler
-                    bookTitle.onkeypress = null;
+                        // Remove keypress handler
+                        bookTitle.onkeypress = null;
+                    }
                 }
+
+                // Do not reach other elements
+                event.stopPropagation();
             });
 
             return editBookTitleButton;
@@ -626,6 +630,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookTitleElem.textContent = bookTitle;
             bookTitleElem.className = 'bookTitle';
             bookTitleElem.contentEditable = false;
+
+            // Do not reach other elements
+            bookTitleElem.addEventListener('click', (event) => {
+                if (bookTitleElem.contentEditable === 'true') {
+                    event.stopPropagation();
+                }
+            });
 
             return bookTitleElem;
         }
@@ -662,10 +673,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookCheckbox.title = 'Select/Deselect all pages in this book';
 
             // Toggle all checkboxes in a book
-            bookCheckbox.addEventListener('change', () => {
+            bookCheckbox.addEventListener('click', (event) => {
                 getBookElementById(bookId).querySelectorAll('.pageCheckbox').forEach((checkbox) => {
                     checkbox.checked = bookCheckbox.checked;
                 });
+
+                // Do not reach other elements
+                event.stopPropagation();
             });
 
             return bookCheckbox;
@@ -678,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             restoreSelectedPagesButton.className = 'restoreSelectedPagesButton';
 
             // Restore selected pages from a book
-            restoreSelectedPagesButton.addEventListener('click', () => {
+            restoreSelectedPagesButton.addEventListener('click', (event) => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
@@ -697,11 +711,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (pagesToRestore.length === 0) {
                     alert('Please select at least one page to restore.');
+                    event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
                 // Confirm restoration
                 if (!confirm(`Are you sure you want to restore the selected page${pagesToRestore.length !== 1 ? 's' : ''}?`)) {
+                    event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
@@ -715,15 +731,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Remove the pages from the book
                 if (!(book.locked)) {
                     if (pagesToRestore.length === book.pages.length) {
-                        // Get the index of the book
-                        let bookIndex = shelf.books.indexOf(book);
-
                         // Remove the book
-                        shelf.books.splice(bookIndex, 1);
-                        bookElem.parentElement.removeChild(bookElem);
-
-                        // Display a message if there are no pages
-                        displayResultMessage();
+                        removeBook(book.id);
                     }
                     else {
                         // Get the page list element
@@ -742,11 +751,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Update pages count
                         updatePageCount(book.id);
-                    }
 
-                    // Save the updated bookshelfData
-                    saveBookshelfDataToStorage();
+                        // Save the updated bookshelfData
+                        saveBookshelfDataToStorage();
+                    }
                 }
+
+                // Do not reach other elements
+                event.stopPropagation();
             });
 
             return restoreSelectedPagesButton;
@@ -759,7 +771,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             removeSelectedPagesButton.className = 'removeSelectedPagesButton';
 
             // Remove selected pages from a book
-            removeSelectedPagesButton.addEventListener('click', () => {
+            removeSelectedPagesButton.addEventListener('click', (event) => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
@@ -781,24 +793,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (indicesToRemove.length === 0) {
                     alert('Please select at least one page to remove.');
+                    event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
                 // Confirm to remove the pages
                 if (!confirm(`Are you sure you want to remove the selected page${indicesToRemove.length !== 1 ? 's' : ''}?`)) {
+                    event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
                 // Remove pages starting from the highest index to avoid index shifting
                 indicesToRemove.sort((a, b) => b - a).forEach((index) => {
                     // Remove the page from the moved ones too
-                    if (pagesToMove.length === dropAreaList.children.length) {  // Assert data compatibility
-                        let pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
-                        if (pageIndex !== -1) {
-                            dropAreaList.removeChild(dropAreaList.children[pageIndex]);
-                            pagesToMove.splice(pageIndex, 1);
-                        }
-                    };
+                    let pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
+                    if (pageIndex !== -1) {
+                        dropAreaList.removeChild(dropAreaList.children[pageIndex]);
+                        pagesToMove.splice(pageIndex, 1);
+                    }
 
                     // Remove page
                     pageList.removeChild(pageList.children[index]);
@@ -810,17 +822,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     removeBook(bookId);
                 }
                 else {
-                // Uncheck the drop area checkbox
+                    // Uncheck the drop area checkbox
                     let bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
                     bookCheckboxElem.checked = false;
                     bookCheckboxElem.indeterminate = false;
 
-                // Update pages count
-                updatePageCount(bookId);
+                    // Update pages count
+                    updatePageCount(bookId);
 
-                // Save the updated bookshelfData
-                saveBookshelfDataToStorage();
+                    // Save the updated bookshelfData
+                    saveBookshelfDataToStorage();
                 }
+
+                // Do not reach other elements
+                event.stopPropagation();
             });
 
             return removeSelectedPagesButton;
@@ -860,7 +875,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             bookLock.appendChild(svgElem);
 
             // Lock or unlock the book
-            bookLock.addEventListener('click', () => {
+            bookLock.addEventListener('click', (event) => {
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
@@ -882,6 +897,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
+
+                // Do not reach other elements
+                event.stopPropagation();
             });
 
             return bookLock;
@@ -915,41 +933,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Add event listener
             bookHeader.addEventListener('click', (event) => {
+                // Get HTML elements
                 const bookElem = getBookElementById(bookId);
                 const bookHeaderTop = bookElem.querySelector('.bookHeaderTop');
                 const bookHeaderBottom = bookElem.querySelector('.bookHeaderBottom');
-                const pagesCount = bookElem.querySelector('.pagesCount');
-                const bookTitle = bookElem.querySelector('.bookTitle');
-                const editBookTitleButton = bookElem.querySelector('.editBookTitleButton');
+                const pageList = bookElem.querySelector('.pageList');
 
-                // Toggle book collapse/expand state
-                if ((event.target === bookHeader) || (event.target === bookHeaderTop) || (event.target === bookHeaderBottom) || (event.target === pagesCount)
-                    || ((event.target === bookTitle) && (editBookTitleButton.dataset.mode === 'edit'))) {
-                    // Find the shelf
-                    const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+                // Find the shelf
+                const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
-                    // Find the book
-                    const book = shelf.books.find(book => book.id === bookId);
+                // Find the book
+                const book = shelf.books.find(book => book.id === bookId);
 
-                    // Get HTML elements
-                    const pageList = bookElem.querySelector('.pageList');
-
-                    // Toggle the display style
-                    if (book.collapsed) {
-                        pageList.style.display = 'grid';
-                        bookHeaderBottom.style.display = 'flex';
-                        bookHeaderTop.style.marginBottom = '5px';
-                    }
-                    else {
-                        pageList.style.display = 'none';
-                        bookHeaderBottom.style.display = 'none';
-                        bookHeaderTop.style.marginBottom = '0';
-                    }
-                    book.collapsed ^= true;  // toggle value
-
-                    // Save the updated bookshelfData
-                    saveBookshelfDataToStorage();
+                // Toggle the display style
+                if (book.collapsed) {
+                    pageList.style.display = 'grid';
+                    bookHeaderBottom.style.display = 'flex';
+                    bookHeaderTop.style.marginBottom = '5px';
                 }
+                else {
+                    pageList.style.display = 'none';
+                    bookHeaderBottom.style.display = 'none';
+                    bookHeaderTop.style.marginBottom = '0';
+                }
+                book.collapsed ^= true;  // toggle value
+
+                // Save the updated bookshelfData
+                saveBookshelfDataToStorage();
             });
 
             return bookHeader;
@@ -1001,12 +1011,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Remove the page from the book
                 if (!(book.locked)) {
                     if (book.pages.length === 1) {  // It means that only this page is in the book
-                        // Get the index of the book
-                        let bookIndex = shelf.books.indexOf(book);
-
                         // Remove the book
-                        shelf.books.splice(bookIndex, 1);
-                        bookElem.parentElement.removeChild(bookElem);
+                        removeBook(book.id);
                     }
                     else {
                         // Get the index of the page
@@ -1018,10 +1024,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Remove the page
                         book.pages.splice(pageIndex, 1);
                         pageListElem.removeChild(pageListElem.children[pageIndex]);
-                    }
 
-                    // Save the updated bookshelfData
-                    saveBookshelfDataToStorage();
+                        // Save the updated bookshelfData
+                        saveBookshelfDataToStorage();
+                    }
                 }
             });
 
@@ -1031,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Function to create the move shelf handler
         function createMovePageHandler() {
             const movePageHandler = document.createElement('button');
-            movePageHandler.title = 'Move this shelf, click to multi-select';
+            movePageHandler.title = 'Move this page, click to multi-select';
             movePageHandler.className = 'movePageHandler';
 
             // Create SVG element
@@ -1102,7 +1108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Find dragged pages in the start book
                     let pagesDragged = Array.from(itemIndexes, index => startBook.pages[index]);
-                    if (pagesDragged.length === 0) return;  // Nothing to do
 
                     // Get new index
                     let newIndex = evt.newIndex;
@@ -1473,7 +1478,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Find dragged pages
                 let pagesDragged = Array.from(itemIndexes, index => pagesToMove[index]);
-                if (pagesDragged.length === 0) return;  // Nothing to do
 
                 // Remove pages from old indexes
                 pagesToMove = pagesToMove.filter(page => !pagesDragged.includes(page));
@@ -1536,7 +1540,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                             else {
                                 let pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
-                                pageElem.parent.removeChild(pageElem);
+                                pageElem.parentElement.removeChild(pageElem);
 
                                 updatePageCount(page.bookId);  // Update pages count
                             }
@@ -1559,26 +1563,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Remove data from the original book
                         const startShelf = bookshelfData.find(shelf => shelf.id === page.shelfId);
                         const startBook = startShelf.books.find(book => book.id === page.bookId);
-                        startBook.pages = startBook.pages.filter(item => item.id !== page.id);
+                        let pageIndex = startBook.pages.findIndex(item => item.id === page.id);
+                        startBook.pages.splice(pageIndex, 1);
 
-                        // Remove element from the original book
-                        if (page.shelfId === selectedShelfId) {
-                            if (startBook.pages.length === 0) {
-                                removeBook(page.bookId);  // Remove the book because no pages are left
-                            }
-                            else {
-                                let pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
-                                pageElem.parent.removeChild(pageElem);
-
-                                updatePageCount(page.bookId);  // Update pages count
-                            }
+                        if (page.bookId === endBookId) {  // It means that the startBook and endBook are the same
+                            if (newIndex > pageIndex) newIndex--;
                         }
+                        else {
+                            // Remove element from the original book
+                            if (page.shelfId === selectedShelfId) {
+                                if (startBook.pages.length === 0) {
+                                    removeBook(page.bookId);  // Remove the book because no pages are left
+                                }
+                                else {
+                                    let pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
+                                    pageElem.parentElement.removeChild(pageElem);
 
-                        // generate new ID
-                        while (pagesIds.includes(page.id)) {
-                            page.id = generateUUID();
-                        };
+                                    updatePageCount(page.bookId);  // Update pages count
+                                }
+                            }
+
+                            // generate new ID
+                            while (pagesIds.includes(page.id)) {
+                                page.id = generateUUID();
+                            };
+                        }
                     });
+
+                    // Remove unwanted attributes from the dragged pages
+                    pagesDragged = structuredClone(pagesDragged.map((page) => {
+                        const { bookId, shelfId, ...newPage } = page;
+                        return newPage;
+                    }));
 
                     // Add pages
                     endBook.pages.splice(newIndex, 0, ...pagesDragged);
