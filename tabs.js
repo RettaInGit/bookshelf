@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event listener for the theme toggle button
     themeToggleButton.addEventListener('click', () => {
         chrome.storage.local.get('themeSelected', (data) => {
-            let currentTheme = data.themeSelected || 'light';
+            const currentTheme = data.themeSelected || 'light';
 
             if (currentTheme === 'light') {  // Switch to dark
                 document.body.classList.add('darkTheme');
@@ -236,10 +236,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event listener for the drop area remove selected page button
     dropAreaRemoveSelectedPagesButton.addEventListener('click', () => {
         // Get all checkboxes
-        let dropAreaCheckboxes = dropAreaList.querySelectorAll('.pageCheckbox');
+        const dropAreaCheckboxes = dropAreaList.querySelectorAll('.pageCheckbox');
 
         // Collect the indices of pages to remove
-        let indicesToRemove = [];
+        const indicesToRemove = [];
         dropAreaCheckboxes.forEach((checkbox, checkboxIndex) => {
             if (checkbox.checked) {
                 indicesToRemove.push(checkboxIndex);
@@ -736,7 +736,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else {
                         // Get the page list element
-                        let pageListElem = bookElem.querySelector(".pageList");
+                        const pageListElem = bookElem.querySelector(".pageList");
 
                         // Remove the pages
                         pagesIndexes.sort((a, b) => b - a).forEach((index) => {
@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         // Uncheck the drop area checkbox
-                        let bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                        const bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
                         bookCheckboxElem.checked = false;
                         bookCheckboxElem.indeterminate = false;
 
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pageCheckboxes = bookElem.querySelectorAll('.pageCheckbox');
 
                 // Collect the indices of pages to remove
-                let indicesToRemove = [];
+                const indicesToRemove = [];
                 pageCheckboxes.forEach((checkbox, checkboxIndex) => {
                     if (checkbox.checked) {
                         indicesToRemove.push(checkboxIndex);
@@ -806,7 +806,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Remove pages starting from the highest index to avoid index shifting
                 indicesToRemove.sort((a, b) => b - a).forEach((index) => {
                     // Remove the page from the moved ones too
-                    let pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
+                    const pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
                     if (pageIndex !== -1) {
                         dropAreaList.removeChild(dropAreaList.children[pageIndex]);
                         pagesToMove.splice(pageIndex, 1);
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else {
                     // Uncheck the drop area checkbox
-                    let bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                    const bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
                     bookCheckboxElem.checked = false;
                     bookCheckboxElem.indeterminate = false;
 
@@ -997,10 +997,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageLink.target = '_blank';
             pageLink.title = page.url;
 
-            let pageId = page.id;
+            const pageId = page.id;
             pageLink.addEventListener('click', () => {
                 // Get the book element
-                let bookElem = pageLink.closest('.bookListItem');
+                const bookElem = pageLink.closest('.bookListItem');
 
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
@@ -1016,10 +1016,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else {
                         // Get the index of the page
-                        let pageIndex = book.pages.findIndex(page => page.id === pageId);
+                        const pageIndex = book.pages.findIndex(page => page.id === pageId);
 
                         // Get the page list element
-                        let pageListElem = pageLink.closest('.pageList');
+                        const pageListElem = pageLink.closest('.pageList');
 
                         // Remove the page
                         book.pages.splice(pageIndex, 1);
@@ -1085,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // Set sorting parameters for the pages
-            let startBookId = book.id;
+            const startBookId = book.id;
             Sortable.create(pageList, {
                 group: {
                     name: 'movePages',
@@ -1103,8 +1103,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const startBook = shelf.books.find(book => book.id === startBookId);
 
                     // Get all the items that were dragged
-                    let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
-                    let itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
+                    const itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
+                    const itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
 
                     // Find dragged pages in the start book
                     let pagesDragged = Array.from(itemIndexes, index => startBook.pages[index]);
@@ -1128,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         } while (shelf.books.some(book => book.id === newBookId));
 
                         // Create default book title as 'Book X'
-                        let defaultBookTitle = `Book ${shelf.books.length + 1}`;
+                        const defaultBookTitle = `Book ${shelf.books.length + 1}`;
 
                         // Create the new book
                         const newBook = {
@@ -1141,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Update moved pages
                         pagesDragged.forEach(page => {
-                            let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
+                            const itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
                             if (itemMoved !== undefined) {
                                 itemMoved.bookId = newBookId;
                             }
@@ -1172,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else if (evt.to === dropAreaList) {
                         // Filter out the pages that are already in 'pagesToMove'
-                        let filteringIndices = [];
+                        const filteringIndices = [];
                         pagesDragged = structuredClone(pagesDragged);
                         pagesDragged.forEach((page, pageIndex) => {
                             if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id)) {
@@ -1194,12 +1194,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             if (pagesDragged.length !== 0 && !filteringIndices.includes(itemIndex)) {
                                 // Create a clone of the dragged item
-                                let clone = item.cloneNode(true);
-                                let cloneCheckbox = clone.children[0];  // TODO: change this hack
+                                const clone = item.cloneNode(true);
+                                const cloneCheckbox = clone.children[0];  // TODO: change this hack
 
                                 // Add functionality to the clone
                                 cloneCheckbox.addEventListener('change', () => {
-                                    let dropAreaCheckboxes = Array.from(dropAreaList.querySelectorAll('.pageCheckbox'));
+                                    const dropAreaCheckboxes = Array.from(dropAreaList.querySelectorAll('.pageCheckbox'));
 
                                     const allChecked = dropAreaCheckboxes.every(checkbox => checkbox.checked);
                                     const anyChecked = dropAreaCheckboxes.some(checkbox => checkbox.checked);
@@ -1227,15 +1227,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else {
                         // Get ID of the book where the pages are moved
-                        let endBookId = evt.to.closest('.bookListItem').dataset.bookId;
+                        const endBookId = evt.to.closest('.bookListItem').dataset.bookId;
 
                         // Get the book where the pages are moved
                         const endBook = shelf.books.find(book => book.id === endBookId);
 
                         // Check if the pages we are moving have the same ID as those in the book
-                        let pagesIds = endBook.pages.map(page => page.id);
+                        const pagesIds = endBook.pages.map(page => page.id);
                         pagesDragged.forEach(page => {
-                            let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
+                            const itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id);
 
                             while (pagesIds.includes(page.id)) {
                                 page.id = generateUUID();  // generate new ID
@@ -1341,11 +1341,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
                 // Get the item dragged (only one allowed)
-                let itemDragged = evt.item;
-                let itemIndex = evt.oldIndex;
+                const itemDragged = evt.item;
+                const itemIndex = evt.oldIndex;
 
                 // Find dragged book
-                let bookDragged = shelf.books[itemIndex];
+                const bookDragged = shelf.books[itemIndex];
 
                 // Get dragged pages
                 let pagesDragged = structuredClone(bookDragged.pages);
@@ -1360,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else if (evt.to === dropAreaList) {
                     // Filter out the pages that are already in 'pagesToMove'
-                    let filteringIndices = [];
+                    const filteringIndices = [];
                     pagesDragged.forEach((page, pageIndex) => {
                         if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id)) {
                             filteringIndices.push(pageIndex);
@@ -1388,12 +1388,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                         itemDragged.querySelectorAll('.pageListItem').forEach((page, pageIndex) => {
                             if (!filteringIndices.includes(pageIndex)) {
                                 // Create a clone of the page
-                                let clone = page.cloneNode(true);
-                                let cloneCheckbox = clone.children[0];  // TODO: change this hack
+                                const clone = page.cloneNode(true);
+                                const cloneCheckbox = clone.children[0];  // TODO: change this hack
 
                                 // Add functionality to the clone
                                 cloneCheckbox.addEventListener('change', () => {
-                                    let dropAreaCheckboxes = Array.from(dropAreaList.querySelectorAll('.pageCheckbox'));
+                                    const dropAreaCheckboxes = Array.from(dropAreaList.querySelectorAll('.pageCheckbox'));
 
                                     const allChecked = dropAreaCheckboxes.every(checkbox => checkbox.checked);
                                     const anyChecked = dropAreaCheckboxes.some(checkbox => checkbox.checked);
@@ -1419,15 +1419,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else {
                     // Get ID of the book where the pages are moved
-                    let endBookId = evt.to.closest('.bookListItem').dataset.bookId;
+                    const endBookId = evt.to.closest('.bookListItem').dataset.bookId;
 
                     // Get the book where the pages are moved
                     const endBook = shelf.books.find(book => book.id === endBookId);
 
                     // Check if the pages we are moving have the same ID as those in the book
-                    let pagesIds = endBook.pages.map(page => page.id);
+                    const pagesIds = endBook.pages.map(page => page.id);
                     pagesDragged.forEach(page => {
-                        let itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id);
+                        const itemMoved = pagesToMove.find(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id);
 
                         while (pagesIds.includes(page.id)) {
                             page.id = generateUUID();  // generate new ID
@@ -1473,8 +1473,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
 
                 // Get all the items that were dragged
-                let itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
-                let itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
+                const itemsDragged = evt.items.length > 0 ? evt.items : [evt.item];
+                const itemIndexes = evt.oldIndicies.length > 0 ? evt.oldIndicies.map(item => item.index) : [evt.oldIndex];
 
                 // Find dragged pages
                 let pagesDragged = Array.from(itemIndexes, index => pagesToMove[index]);
@@ -1498,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } while (shelf.books.some(book => book.id === newBookId));
 
                     // Create default book title as 'Book X'
-                    let defaultBookTitle = `Book ${shelf.books.length + 1}`;
+                    const defaultBookTitle = `Book ${shelf.books.length + 1}`;
 
                     // Create the new book
                     const newBook = {
@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 removeBook(page.bookId);  // Remove the book because no pages are left
                             }
                             else {
-                                let pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
+                                const pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
                                 pageElem.parentElement.removeChild(pageElem);
 
                                 updatePageCount(page.bookId);  // Update pages count
@@ -1552,18 +1552,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else {
                     // Get ID of the book where the pages are moved
-                    let endBookId = evt.to.closest('.bookListItem').dataset.bookId;
+                    const endBookId = evt.to.closest('.bookListItem').dataset.bookId;
 
                     // Get the book where the pages are moved
                     const endBook = shelf.books.find(book => book.id === endBookId);
 
                     // Check if the pages we are moving have the same ID as those in the book
-                    let pagesIds = endBook.pages.map(page => page.id);
+                    const pagesIds = endBook.pages.map(page => page.id);
                     pagesDragged.forEach(page => {
                         // Remove data from the original book
                         const startShelf = bookshelfData.find(shelf => shelf.id === page.shelfId);
                         const startBook = startShelf.books.find(book => book.id === page.bookId);
-                        let pageIndex = startBook.pages.findIndex(item => item.id === page.id);
+                        const pageIndex = startBook.pages.findIndex(item => item.id === page.id);
                         startBook.pages.splice(pageIndex, 1);
 
                         if (page.bookId === endBookId) {  // It means that the startBook and endBook are the same
@@ -1576,7 +1576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     removeBook(page.bookId);  // Remove the book because no pages are left
                                 }
                                 else {
-                                    let pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
+                                    const pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
                                     pageElem.parentElement.removeChild(pageElem);
 
                                     updatePageCount(page.bookId);  // Update pages count
