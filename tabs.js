@@ -67,12 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Get book element from ID
-    function getBookElementById(bookId) {
+    function getBookListItem(bookId) {
         return bookList.querySelector(`.bookListItem[data-book-id="${bookId}"]`);
     }
 
     // Get shelf element from ID
-    function getShelfElementById(shelfId) {
+    function getShelfListItem(shelfId) {
         return shelfList.querySelector(`.shelfListItem[data-shelf-id="${shelfId}"]`);
     }
 
@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         indicesToRemove.sort((a, b) => b - a).forEach((index) => {
             // Remove 'pageMoved' class
             if (pagesToMove[index].shelfId === selectedShelfId) {
-                getBookElementById(pagesToMove[index].bookId).querySelector(`.pageListItem[data-page-id="${pagesToMove[index].id}"]`).classList.remove('pageMoved');
+                getBookListItem(pagesToMove[index].bookId).querySelector(`.pageListItem[data-page-id="${pagesToMove[index].id}"]`).classList.remove('pageMoved');
             };
 
             // Remove element
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const shelf = bookshelfData.find(shelf => shelf.id === shelfId);
 
                 // Get HTML element
-                const shelfTitle = getShelfElementById(shelfId).querySelector('.shelfTitle');
+                const shelfTitle = getShelfListItem(shelfId).querySelector('.shelfTitle');
 
                 if (editShelfTitleButton.dataset.mode === 'edit') {
                     // Switch to edit mode
@@ -488,8 +488,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         saveBookshelfDataToStorage();
 
                         // Remove shelf element
-                        const shelfElem = getShelfElementById(shelfId);
-                        shelfList.removeChild(shelfElem);
+                        shelfList.removeChild(getShelfListItem(shelfId));
                     }
                 }
                 else if (confirm('Are you sure you want to reset this shelf?')) {
@@ -560,7 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const book = shelf.books.find(book => book.id === bookId);
 
                 // Get HTML element
-                const bookTitle = getBookElementById(bookId).querySelector('.bookTitle');
+                const bookTitle = getBookListItem(bookId).querySelector('.bookTitle');
 
                 if (editBookTitleButton.dataset.mode === 'edit') {
                     // Switch to edit mode
@@ -674,7 +673,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Toggle all checkboxes in a book
             bookCheckbox.addEventListener('click', (event) => {
-                getBookElementById(bookId).querySelectorAll('.pageCheckbox').forEach((checkbox) => {
+                getBookListItem(bookId).querySelectorAll('.pageCheckbox').forEach((checkbox) => {
                     checkbox.checked = bookCheckbox.checked;
                 });
 
@@ -700,8 +699,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const book = shelf.books.find(book => book.id === bookId);
 
                 // Get HTML elements
-                const bookElem = getBookElementById(bookId);
-                const pageCheckboxes = bookElem.querySelectorAll('.pageCheckbox');
+                const bookListItem = getBookListItem(bookId);
+                const pageCheckboxes = bookListItem.querySelectorAll('.pageCheckbox');
 
                 // Get the indexes of the pages selected
                 const pagesIndexes = Array.from(pageCheckboxes).map((checkbox, index) => (checkbox.checked ? index : -1)).filter((index) => index !== -1);
@@ -736,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else {
                         // Get the page list element
-                        const pageListElem = bookElem.querySelector(".pageList");
+                        const pageListElem = bookListItem.querySelector(".pageList");
 
                         // Remove the pages
                         pagesIndexes.sort((a, b) => b - a).forEach((index) => {
@@ -745,7 +744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         // Uncheck the drop area checkbox
-                        const bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                        const bookCheckboxElem = bookListItem.querySelector('.bookCheckbox');
                         bookCheckboxElem.checked = false;
                         bookCheckboxElem.indeterminate = false;
 
@@ -779,9 +778,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const book = shelf.books.find(book => book.id === bookId);
 
                 // Get HTML elements
-                const bookElem = getBookElementById(bookId);
-                const pageList = bookElem.querySelector('.pageList');
-                const pageCheckboxes = bookElem.querySelectorAll('.pageCheckbox');
+                const bookListItem = getBookListItem(bookId);
+                const pageList = bookListItem.querySelector('.pageList');
+                const pageCheckboxes = bookListItem.querySelectorAll('.pageCheckbox');
 
                 // Collect the indices of pages to remove
                 const indicesToRemove = [];
@@ -823,7 +822,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else {
                     // Uncheck the drop area checkbox
-                    const bookCheckboxElem = bookElem.querySelector('.bookCheckbox');
+                    const bookCheckboxElem = bookListItem.querySelector('.bookCheckbox');
                     bookCheckboxElem.checked = false;
                     bookCheckboxElem.indeterminate = false;
 
@@ -934,10 +933,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Add event listener
             bookHeader.addEventListener('click', (event) => {
                 // Get HTML elements
-                const bookElem = getBookElementById(bookId);
-                const bookHeaderTop = bookElem.querySelector('.bookHeaderTop');
-                const bookHeaderBottom = bookElem.querySelector('.bookHeaderBottom');
-                const pageList = bookElem.querySelector('.pageList');
+                const bookListItem = getBookListItem(bookId);
+                const bookHeaderTop = bookListItem.querySelector('.bookHeaderTop');
+                const bookHeaderBottom = bookListItem.querySelector('.bookHeaderBottom');
+                const pageList = bookListItem.querySelector('.pageList');
 
                 // Find the shelf
                 const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
@@ -974,9 +973,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Update the book checkbox state based on individual checkboxes
             pageCheckbox.addEventListener('change', () => {
-                const bookElem = getBookElementById(bookId);
-                const bookCheckbox = bookElem.querySelector('.bookCheckbox');
-                const pageCheckboxes = Array.from(bookElem.querySelectorAll('.pageCheckbox'));
+                const bookListItem = getBookListItem(bookId);
+                const bookCheckbox = bookListItem.querySelector('.bookCheckbox');
+                const pageCheckboxes = Array.from(bookListItem.querySelectorAll('.pageCheckbox'));
 
                 const allChecked = pageCheckboxes.every(checkbox => checkbox.checked);
                 const anyChecked = pageCheckboxes.some(checkbox => checkbox.checked);
@@ -1539,7 +1538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 removeBook(page.bookId);  // Remove the book because no pages are left
                             }
                             else {
-                                const pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
+                                const pageElem = getBookListItem(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
                                 pageElem.parentElement.removeChild(pageElem);
 
                                 updatePageCount(page.bookId);  // Update pages count
@@ -1576,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     removeBook(page.bookId);  // Remove the book because no pages are left
                                 }
                                 else {
-                                    const pageElem = getBookElementById(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
+                                    const pageElem = getBookListItem(page.bookId).querySelector(`.pageListItem[data-page-id="${page.id}"]`);
                                     pageElem.parentElement.removeChild(pageElem);
 
                                     updatePageCount(page.bookId);  // Update pages count
@@ -1624,7 +1623,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const book = shelf.books.find(book => book.id === bookId);
 
             // Change text
-            getBookElementById(bookId).querySelector('.pagesCount').textContent = `${book.pages.length} Page${book.pages.length !== 1 ? 's' : ''}`;
+            getBookListItem(bookId).querySelector('.pagesCount').textContent = `${book.pages.length} Page${book.pages.length !== 1 ? 's' : ''}`;
         }
 
         // Function to remove an entire page book
@@ -1636,7 +1635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const bookIndex = shelf.books.findIndex(book => book.id === bookId);
 
             // Get HTML element
-            const bookListItem = getBookElementById(bookId);
+            const bookListItem = getBookListItem(bookId);
 
             // Remove the book
             bookListItem.parentElement.removeChild(bookListItem);
