@@ -392,7 +392,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         bookshelfData.push(data);
-                        shelfList.appendShelfListItem(data);
                     }
                 });
             }
@@ -401,17 +400,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error during import:', error);
         }
 
-        if (shelf.books.length === 0) {
-            // Remove empty shelf
-            if (shelf.id !== selectedShelfId) bookshelfData.splice(bookshelfData.indexOf(shelf), 1);
-        }
-        else {
-            // Save the bookshelf data
-            saveBookshelfDataToStorage();
+        // Remove empty shelf
+        if ((shelf.books.length === 0) && (shelf.id !== selectedShelfId)) bookshelfData.splice(bookshelfData.indexOf(shelf), 1);
 
-            // Repaint the DOM
-            if (shelf.id === selectedShelfId) displayBookshelf();
-        }
+        // Save the bookshelf data
+        saveBookshelfDataToStorage();
+
+        // Repaint the DOM
+        displayBookshelf();
 
         alert("Import complete!");
     });
