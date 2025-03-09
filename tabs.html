@@ -8,14 +8,16 @@
 </head>
 <body>
     <!-- Main Header -->
-    <header id="mainHeader" style="z-index: 100;">
+    <header id="mainHeader" style="z-index: 50;">
         <div id="mainHeaderLeft">
+            <!-- Shelf Title -->
             <h2 id="selectedShelfTitle">
                 <svg id="arrowIcon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 10 10">
                     <path d="M3 1 L7 5 L3 9" />
                 </svg>
                 Bookshelf
             </h2>
+            <!-- Shelf List -->
             <div id="bookShelves" class="close">
                 <ul id="shelfList" style="z-index: 50;"></ul>
                 <button id="addNewShelfButton">
@@ -27,6 +29,7 @@
             </div>
         </div>
         <div id="mainHeaderCenter">
+            <!-- Search Bar -->
             <input type="text" id="searchBar" placeholder="Search pages...">
         </div>
         <div id="mainHeaderRight">
@@ -35,6 +38,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 30 30">
                     <path id="sunIcon" visibility="visible" d="M 14.984375 0.98632812 A 1.0001 1.0001 0 0 0 14 2 L 14 5 A 1.0001 1.0001 0 1 0 16 5 L 16 2 A 1.0001 1.0001 0 0 0 14.984375 0.98632812 z M 5.796875 4.7988281 A 1.0001 1.0001 0 0 0 5.1015625 6.515625 L 7.2226562 8.6367188 A 1.0001 1.0001 0 1 0 8.6367188 7.2226562 L 6.515625 5.1015625 A 1.0001 1.0001 0 0 0 5.796875 4.7988281 z M 24.171875 4.7988281 A 1.0001 1.0001 0 0 0 23.484375 5.1015625 L 21.363281 7.2226562 A 1.0001 1.0001 0 1 0 22.777344 8.6367188 L 24.898438 6.515625 A 1.0001 1.0001 0 0 0 24.171875 4.7988281 z M 15 8 A 7 7 0 0 0 8 15 A 7 7 0 0 0 15 22 A 7 7 0 0 0 22 15 A 7 7 0 0 0 15 8 z M 2 14 A 1.0001 1.0001 0 1 0 2 16 L 5 16 A 1.0001 1.0001 0 1 0 5 14 L 2 14 z M 25 14 A 1.0001 1.0001 0 1 0 25 16 L 28 16 A 1.0001 1.0001 0 1 0 28 14 L 25 14 z M 7.9101562 21.060547 A 1.0001 1.0001 0 0 0 7.2226562 21.363281 L 5.1015625 23.484375 A 1.0001 1.0001 0 1 0 6.515625 24.898438 L 8.6367188 22.777344 A 1.0001 1.0001 0 0 0 7.9101562 21.060547 z M 22.060547 21.060547 A 1.0001 1.0001 0 0 0 21.363281 22.777344 L 23.484375 24.898438 A 1.0001 1.0001 0 1 0 24.898438 23.484375 L 22.777344 21.363281 A 1.0001 1.0001 0 0 0 22.060547 21.060547 z M 14.984375 23.986328 A 1.0001 1.0001 0 0 0 14 25 L 14 28 A 1.0001 1.0001 0 1 0 16 28 L 16 25 A 1.0001 1.0001 0 0 0 14.984375 23.986328 z"/>
                     <path id="moonIcon" visibility="hidden" fill="#444" d="M14.4 0c-7.92 0-14.4 6.48-14.4 14.4s6.48 14.4 14.4 14.4 14.4-6.48 14.4-14.4-6.48-14.4-14.4-14.4zM14.4 27c-7.02 0-12.6-5.58-12.6-12.6 0-4.32 2.16-8.28 5.76-10.62-0.18 1.08-0.36 2.34-0.36 3.42 0 8.82 7.2 16.02 16.02 16.2-2.34 2.34-5.4 3.6-8.82 3.6z"/>
+                </svg>
+            </button>
+            <!-- Import/export Button -->
+            <button id="importExportButton" title="Import/export">
+                <svg width="36" height="36" viewBox="0 0 1.08 1.08" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M.891.838.887.842.752.977.748.981.743.985.739.987.735.989.73.991.725.992H.718L.713.99.707.988.702.986.697.983.692.98.688.976.553.841a.045.045 0 0 1 .06-.066l.005.004.058.058V.405A.045.045 0 0 1 .715.36H.72a.045.045 0 0 1 .045.045v.431L.824.778A.045.045 0 0 1 .883.774l.005.004a.045.045 0 0 1 .007.055zM.194.239.329.104.334.099.339.095.345.093.349.091.354.09.359.089h.005L.37.09l.006.002.003.001.004.002.003.002L.39.1l.003.003.002.002L.53.24l.004.005a.045.045 0 0 1 0 .055L.528.302.524.306a.045.045 0 0 1-.055 0L.464.302.405.244v.431a.045.045 0 0 1-.04.045h-.01a.045.045 0 0 1-.04-.04V.244L.257.302.252.305A.045.045 0 0 1 .19.242z"/>
                 </svg>
             </button>
             <!-- Settings Button -->
@@ -56,15 +65,61 @@
 
         <!-- Drop Area Space -->
         <div id="dropAreaSpace"></div>
+    </div>
 
-        <!-- Settings Overlay -->
-        <div id="settingsOverlay" style="z-index: 101"></div>
+    <!-- Settings Overlay -->
+    <div id="viewOverlay" style="z-index: 100"></div>
 
-        <!-- Settings Page -->
-        <div id="settingsPage" style="z-index: 102">
-            <h2>Settings</h2>
-            <p>Coming soon...</p>
+    <!-- Import/Export Popup -->
+    <div id="importExportPopup" style="z-index: 101">
+        <!-- Import/Export Settings -->
+        <div style="display: grid;">
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+                <label>Compatible with:</label>
+                <div>
+                    <input id="compatibleOneTab" type="radio" name="compatible" checked>One Tab</input>
+                </div>
+                <div>
+                    <input type="radio" name="compatible">JSON</input>
+                </div>
+            </div>
+            <div style="display: flex;">
+                <div style="flex-grow: 1;"></div>
+                <div style="flex-grow: auto; display: flex; justify-content: center; gap: 20px;">
+                    <label style="flex-grow: 1;">Import in:</label>
+                    <div style="flex-grow: 1;">
+                        <input id="importCurrentShelf" type="radio" name="import" checked>Current shelf</input>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <input type="radio" name="import">New shelf</input>
+                    </div>
+                </div>
+                <div style="flex-grow: 1;"></div>
+                <div style="flex-grow: auto; display: flex; justify-content: center; gap: 20px;">
+                    <label style="flex-grow: 1;">Export from:</label>
+                    <div style="flex-grow: 1;">
+                        <input id="exportCurrentShelf" type="radio" name="export" checked>Current shelf</input>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <input type="radio" name="export">All shelves</input>
+                    </div>
+                </div>
+                <div style="flex-grow: 1;"></div>
+            </div>
         </div>
+        <!-- Import/Export Buttons -->
+        <div style="display: flex;">
+            <button id="importButton">Import</button>
+            <button id="exportButton">Export</button>
+        </div>
+        <!-- Import/Export Data -->
+        <textarea id="importExportTextArea"></textarea>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="settingsPage" style="z-index: 102">
+        <h2>Settings</h2>
+        <p>Coming soon...</p>
     </div>
 
     <!-- Drop Area -->
@@ -77,7 +132,7 @@
     </div>
 
     <!-- Drop Area Button -->
-    <button id="dropAreaButton" title="Place pages here to move them more easily between books and shelves">
+    <button id="dropAreaButton" title="Place pages here to move them more easily between books and shelves" style="z-index: 0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="400.387 -96.923 569.641 612.001" width="100" height="107.4">
             <path d="M737.076 12.895h-25.75v54.711c0 5.691-4.613 10.305-10.304 10.305h-30.914c-5.691 0-10.305-4.614-10.305-10.305V12.895h-25.748c-7.932 0-12.89-8.587-8.924-15.457l51.506-89.208c3.966-6.87 13.88-6.87 17.847-.001l51.515 89.208c3.967 6.87-.99 15.458-8.923 15.458" style="transform-origin:685.565px -9.50581px" transform="rotate(180 0 0)"/><path d="m961.099 300.431-44.439-3.545v169.847l-217.008 46.665c-10.142 2.227-20.694 2.227-30.835.083L460.548 469.7c-3.71-.824-6.432-4.04-6.514-7.832l-3.627-138.847c-.082-4.37 3.215-8.08 7.503-8.492l176.937-15.5c3.051-.247 5.689-2.227 6.844-5.112l42.544-103.227v283.216l192.271-36.525V293.588l-113.264-7.183a24.74 24.74 0 0 1-20.994-14.541l-58.673-130.479-58.952 132.826a8.38 8.38 0 0 1-6.678 4.864L409.429 300.1c-6.349.66-10.966-5.854-8.245-11.707l55.489-118.645c1.154-2.391 3.38-4.123 5.936-4.617l213.875-39.246 7.091-1.319 6.924 1.236 218.492 39.329c2.639.495 4.864 2.226 6.019 4.699l54.252 118.975c2.639 5.772-1.896 12.121-8.163 11.626"/>
         </svg>

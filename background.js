@@ -123,7 +123,7 @@ async function savePages(tabs) {
     // Create new shelf ID
     let newShelfId;
     do {
-        newShelfId = generateUUID();
+      newShelfId = generateUUID();
     } while(bookshelfData.some(shelf => shelf.id === newShelfId));
 
     // Create new shelf

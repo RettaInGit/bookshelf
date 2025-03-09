@@ -104,6 +104,10 @@ input[type="checkbox"] {
     margin-right: 20px;
 }
 
+label {
+    font-size: 16px;
+}
+
 svg path {
     fill: var(--color-text-secondary);
 }
@@ -269,7 +273,7 @@ svg path {
     color: var(--color-text-primary);
 }
 
-#searchBar:focus {
+#searchBar:focus, #importExportTextArea:focus {
     outline: none !important;
     border: 3px solid var(--color-text-accent);
     padding: 9px 13px;
@@ -280,7 +284,7 @@ svg path {
     opacity: 1;
 }
 
-#themeToggleButton, #settingsPageButton {
+#themeToggleButton, #importExportButton, #settingsPageButton {
     background-color: transparent;
     width: 36px;
     height: 36px;
@@ -289,7 +293,7 @@ svg path {
     margin-left: 10px;
 }
 
-#themeToggleButton:hover, #settingsPageButton:hover {
+#themeToggleButton:hover, #importExportButton:hover, #settingsPageButton:hover {
     opacity: 0.8;
 }
 
@@ -309,7 +313,7 @@ svg path {
     transition: all 0.3s ease;
 }
 
-#settingsOverlay {
+#viewOverlay {
     display: none;
     position: fixed;
     top: 0;
@@ -319,8 +323,49 @@ svg path {
     background: rgba(0,0,0,0.4);
 }
 
-#settingsOverlay.open {
+#viewOverlay.open {
     display: block;
+}
+
+#importExportPopup {
+    position: fixed;
+    min-width: 800px;
+    max-width: 95%;
+    height: 600px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--color-page-bg);
+    border: 1px solid var(--color-border-page);
+    box-shadow: 0 0 10px var(--color-shadow);
+    border-radius: 20px;
+    display: none;
+    padding: 20px;
+}
+
+#importExportPopup.open {
+    display: flex;
+    flex-direction: column;
+}
+
+#importExportTextArea {
+    flex-grow: 1;
+    min-width: 760px;
+    max-width: calc(100% - 35px);
+    resize: horizontal;
+    font-size: 16px;
+    border: 2px solid var(--color-border-page);
+    border-radius: 5px 5px 20px 20px;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    padding: 10px 14px;
+    scrollbar-width: none;
+}
+
+#importButton, #exportButton {
+    flex-grow: 1;
+    height: 40px;
+    margin: 20px 5px;
 }
 
 #settingsPage {

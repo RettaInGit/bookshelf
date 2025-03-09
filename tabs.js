@@ -10,12 +10,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addNewShelfButton = document.getElementById('addNewShelfButton');
     const searchBar = document.getElementById('searchBar');
     const themeToggleButton = document.getElementById('themeToggleButton');
+    const importExportButton = document.getElementById('importExportButton');
     const settingsPageButton = document.getElementById('settingsPageButton');
     const dropAreaCheckbox = document.getElementById('dropAreaCheckbox');
     const dropAreaRemoveSelectedPagesButton = document.getElementById('dropAreaRemoveSelectedPagesButton');
     const dropAreaList = document.getElementById('dropAreaList');
     const dropAreaButton = document.getElementById('dropAreaButton');
-    const settingsOverlay = document.getElementById('settingsOverlay');
+    const viewOverlay = document.getElementById('viewOverlay');
+    const importExportPopup = document.getElementById('importExportPopup');
+    const importButton = document.getElementById('importButton');
+    const exportButton = document.getElementById('exportButton');
+    const importExportTextArea = document.getElementById('importExportTextArea');
     const settingsPage = document.getElementById('settingsPage');
     const bookList = document.getElementById('bookList');
     let selectedShelfId = "";
@@ -28,8 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await LoadBookshelfDataFromStorage();
 
     // Change the shelf title with the selected one
-    const selectedShelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
-    changeSelectedShelfTitle(selectedShelf.title);
+    changeSelectedShelfTitle(bookshelfData.find(shelf => shelf.id === selectedShelfId).title);
 
     // Paint the DOM
     displayBookshelf();
@@ -175,12 +179,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Set a new timer
         timeoutId = setTimeout(() => {
-            // TODO: disable or enable (by settings) to move pages when filtering
-            //    if (!settings.canMoveWhileFiltering) {
-            //        pagesToMove = [];
-            //        bookIdOfMovingPages = '';
-            //    }
-
             // Repaint the DOM
             displayBookshelf();
         }, 250);
@@ -210,19 +208,300 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Event listener for the settings page button
-    settingsPageButton.addEventListener('click', (event) => {
-        event.preventDefault(); // Prevent default link behavior
+    // Event listener for the import/export button
+    importExportButton.addEventListener('click', () => {
+        if (importExportPopup.classList.contains('open')) {
+            // Close the import/export popup
+            importExportPopup.classList.remove('open');
+            viewOverlay.classList.remove('open');
+        }
+        else {
+            // Open the import/export popup
+            importExportPopup.classList.add('open');
+            viewOverlay.classList.add('open');
+        }
+    });
 
+    // Event listener for the import/export textarea
+    importExportTextArea.addEventListener('input', () => {
+        const textSpan = document.createElement('span');
+        textSpan.style.visibility = 'hidden';
+        textSpan.style.fontFamily = importExportTextArea.style.fontFamily;
+        textSpan.style.fontSize = importExportTextArea.style.fontSize;
+        textSpan.textContent = importExportTextArea.value;
+        document.body.appendChild(textSpan);
+        importExportTextArea.style.width = `${textSpan.offsetWidth}px`;
+        document.body.removeChild(textSpan);
+    });
+
+    // Event listener for the import button
+    importButton.addEventListener('click', () => {
+        const compatibleOneTab = document.getElementById('compatibleOneTab');
+        const importCurrentShelf = document.getElementById('importCurrentShelf');
+
+        let shelf;
+        if (importCurrentShelf.checked) {
+            // Get the current shelf
+            shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+        }
+        else {
+            // Create new shelf ID
+            let newShelfId;
+            do {
+                newShelfId = generateUUID();
+            } while(bookshelfData.some(shelf => shelf.id === newShelfId));
+
+            // Create new shelf
+            const newShelf = {
+                id: newShelfId,
+                title: `Shelf ${bookshelfData.length + 1}`,
+                books: []
+            }
+
+            // Add the new shelf
+            bookshelfData.push(newShelf);
+
+            // Select the new shelf
+            shelf = newShelf;
+        }
+
+        try {
+            if (compatibleOneTab.checked) {
+                let newPages = [];
+
+                const rows = importExportTextArea.value.split('\n');
+                rows.forEach((row) => {
+                    const splitSimbolIndex = row.indexOf('|');
+                    if (splitSimbolIndex > 0) {
+                        // Get page url and title
+                        const urlAndTitle = [row.slice(0, splitSimbolIndex), row.slice(splitSimbolIndex+1)];
+                        const newPage = {};
+                        newPage.url = urlAndTitle[0].trim();
+                        newPage.title = urlAndTitle[1].trim();
+
+                        // Generate new ID
+                        let newPageId;
+                        do {
+                            newPageId = generateUUID();
+                        } while (newPages.some(page => page.id === newPageId));
+                        newPage.id = newPageId;
+
+                        // Add page to the list
+                        newPages.push(newPage);
+                    }
+                    else if (newPages.length > 0) {
+                        // Create new book ID
+                        let newBookId;
+                        do {
+                            newBookId = generateUUID();
+                        } while (shelf.books.some(book => book.id === newBookId));
+
+                        // Create the new book
+                        const newBook = {
+                            id: newBookId,
+                            title: `Book ${shelf.books.length + 1}`,
+                            pages: structuredClone(newPages),
+                            collapsed: false,
+                            locked: false
+                        };
+
+                        // Add the new book to the list
+                        shelf.books.unshift(newBook);
+
+                        // Reset the new pages list
+                        newPages = [];
+                    }
+                });
+            }
+            else {
+                let importData = JSON.parse(importExportTextArea.value);
+
+                if (!(importData instanceof Array)) importData = [importData];
+
+                importData.forEach((data) => {
+                    if (data.url !== undefined) {  // Importing a page
+                        // Add new page ID
+                        data.id = generateUUID();
+
+                        // Create new book ID
+                        let newBookId;
+                        do {
+                            newBookId = generateUUID();
+                        } while (shelf.books.some(book => book.id === newBookId));
+
+                        // Create new book
+                        const newBook = {
+                            id: newBookId,
+                            title: `Book ${shelf.books.length + 1}`,
+                            pages: [data],
+                            collapsed: false,
+                            locked: false
+                        };
+
+                        // Add the new book to the list
+                        shelf.books.unshift(newBook);
+                    }
+                    else if (data.pages !== undefined) {  // Importing a book
+                        // Add new book ID (and other infornmations)
+                        let newBookId;
+                        do {
+                            newBookId = generateUUID();
+                        } while (shelf.books.some(book => book.id === newBookId));
+                        data.id = newBookId;
+                        data.collapsed = false;
+                        data.locked = false;
+
+                        data.pages.forEach((page) => {
+                            // Add new page ID
+                            let newPageId;
+                            do {
+                                newPageId = generateUUID();
+                            } while (data.pages.some(page => page.id === newPageId));
+                            page.id = newPageId;
+                        });
+
+                        // Add the new book to the list
+                        shelf.books.unshift(data);
+                    }
+                    else if (data.books !== undefined) {  // Importing a shelf
+                        // Add new ID
+                        let newShelfId;
+                        do {
+                            newShelfId = generateUUID();
+                        } while (bookshelfData.some(shelf => shelf.id === newShelfId));
+                        data.id = newShelfId;
+
+                        data.books.forEach((book) => {
+                            // Add new ID (and other informations)
+                            let newBookId;
+                            do {
+                                newBookId = generateUUID();
+                            } while (data.books.some(book => book.id === newBookId));
+                            book.id = newBookId;
+                            book.collapsed = false;
+                            book.locked = false;
+
+                            book.pages.forEach((page) => {
+                                // Add new ID
+                                let newPageId;
+                                do {
+                                    newPageId = generateUUID();
+                                } while (book.pages.some(page => page.id === newPageId));
+                                page.id = newPageId;
+                            });
+                        });
+
+                        bookshelfData.push(data);
+                        shelfList.appendShelfListItem(data);
+                    }
+                });
+            }
+        }
+        catch (error) {
+            console.error('Error during import:', error);
+        }
+
+        if (shelf.books.length === 0) {
+            // Remove empty shelf
+            if (shelf.id !== selectedShelfId) bookshelfData.splice(bookshelfData.indexOf(shelf), 1);
+        }
+        else {
+            // Save the bookshelf data
+            saveBookshelfDataToStorage();
+
+            // Repaint the DOM
+            if (shelf.id === selectedShelfId) displayBookshelf();
+        }
+
+        alert("Import complete!");
+    });
+
+    // Event listener for the export button
+    exportButton.addEventListener('click', () => {
+        const compatibleOneTab = document.getElementById('compatibleOneTab');
+        const exportCurrentShelf = document.getElementById('exportCurrentShelf');
+        const shelf = bookshelfData.find(shelf => shelf.id === selectedShelfId);
+
+        if (compatibleOneTab.checked) {
+            importExportTextArea.value = '';
+
+            if (exportCurrentShelf.checked) {
+                shelf.books.forEach((book) => {
+                    book.pages.forEach((page) => {
+                        importExportTextArea.value += `${page.url} | ${page.title}\n`;
+                    });
+                    importExportTextArea.value += '\n';
+                });
+            }
+            else {
+                bookshelfData.forEach((shelf) => {
+                    shelf.books.forEach((book) => {
+                        book.pages.forEach((page) => {
+                            importExportTextArea.value += `${page.url} | ${page.title}\n`;
+                        });
+                        importExportTextArea.value += '\n';
+                    });
+                });
+            }
+        }
+        else {
+            if (exportCurrentShelf.checked) {
+                // Create a clone of the current shelf
+                let shelfClone = structuredClone(shelf);
+
+                // Maintain only useful information
+                delete shelfClone.id;
+                shelfClone.books.forEach((book) => {
+                    delete book.id;
+                    delete book.collapsed;
+                    delete book.locked;
+
+                    book.pages.forEach((page) => {
+                        delete page.id;
+                    });
+                });
+
+                // Export the clone
+                importExportTextArea.value = JSON.stringify(shelfClone, null, 2);
+            }
+            else {
+                // Create a clone of the bookshelf
+                let bookshelfDataClone = structuredClone(bookshelfData);
+
+                // Maintain only useful information
+                bookshelfDataClone.forEach((shelf) => {
+                    delete shelf.id;
+
+                    shelf.books.forEach((book) => {
+                        delete book.id;
+                        delete book.collapsed;
+                        delete book.locked;
+
+                        book.pages.forEach((page) => {
+                            delete page.id;
+                        });
+                    });
+                });
+
+                // Export the clone
+                importExportTextArea.value = JSON.stringify(bookshelfDataClone, null, 2);
+            }
+        }
+
+        importExportTextArea.dispatchEvent(new Event('input', {}));  // Trigger auto-resize
+    });
+
+    // Event listener for the settings page button
+    settingsPageButton.addEventListener('click', () => {
         if (settingsPage.classList.contains('open')) {
             // Close the settings page
             settingsPage.classList.remove('open');
-            settingsOverlay.classList.remove('open');
+            viewOverlay.classList.remove('open');
         }
         else {
             // Open the settings page
             settingsPage.classList.add('open');
-            settingsOverlay.classList.add('open');
+            viewOverlay.classList.add('open');
         }
     });
 
@@ -300,16 +579,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Event listener for the overlay to close the settings page when clicked
-    settingsOverlay.addEventListener('click', () => {
+    viewOverlay.addEventListener('click', () => {
+        importExportPopup.classList.remove('open');
         settingsPage.classList.remove('open');
-        settingsOverlay.classList.remove('open');
+        viewOverlay.classList.remove('open');
     });
 
     // Close the settings page when the Escape key is pressed
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+            importExportPopup.classList.remove('open');
             settingsPage.classList.remove('open');
-            settingsOverlay.classList.remove('open');
+            viewOverlay.classList.remove('open');
         }
     });
 
@@ -703,7 +984,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pageCheckboxes = bookListItem.querySelectorAll('.pageCheckbox');
 
                 // Get the indexes of the pages selected
-                const pagesIndexes = Array.from(pageCheckboxes).map((checkbox, index) => (checkbox.checked ? index : -1)).filter((index) => index !== -1);
+                const pagesIndexes = [];
+                pageCheckboxes.forEach((checkbox, checkboxIndex) => {
+                    if (checkbox.checked) {
+                        pagesIndexes.push(checkboxIndex);
+                    }
+                });
 
                 // Collect the pages to restore
                 const pagesToRestore = Array.from(pagesIndexes, index => book.pages[index]);
@@ -1126,13 +1412,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             newBookId = generateUUID();
                         } while (shelf.books.some(book => book.id === newBookId));
 
-                        // Create default book title as 'Book X'
-                        const defaultBookTitle = `Book ${shelf.books.length + 1}`;
-
                         // Create the new book
                         const newBook = {
                             id: newBookId,
-                            title: defaultBookTitle,
+                            title: `Book ${shelf.books.length + 1}`,
                             pages: structuredClone(pagesDragged),
                             collapsed: false,
                             locked: false
@@ -1496,13 +1779,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         newBookId = generateUUID();
                     } while (shelf.books.some(book => book.id === newBookId));
 
-                    // Create default book title as 'Book X'
-                    const defaultBookTitle = `Book ${shelf.books.length + 1}`;
-
                     // Create the new book
                     const newBook = {
                         id: newBookId,
-                        title: defaultBookTitle,
+                        title: `Book ${shelf.books.length + 1}`,
                         pages: structuredClone(pagesDragged.map((page) => {
                             const { bookId, shelfId, ...newPage } = page;
                             return newPage;
