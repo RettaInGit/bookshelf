@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Bookshelf",
-  "version": "0.9",
-  "description": "Store and manage your open tabs in a well-arranged bookshelf to save memory.",
+  "version": "1.0.0",
+  "description": "Store and manage your open pages in a well-arranged bookshelf to save memory",
   "permissions": [
     "tabs",
     "storage",
+    "unlimitedStorage",
     "contextMenus"
   ],
   "background": {
@@ -26,5 +27,5 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "homepage_url": "https://your-extension-homepage.com"
+  "homepage_url": "https://github.com/RettaInGit/bookshelf"
 }
