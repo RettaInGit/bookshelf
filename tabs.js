@@ -1269,6 +1269,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             return pageCheckbox;
         }
 
+        // Function to create the page icon
+        function createPageIcon(url) {
+            const pageIcon = document.createElement('img');
+            pageIcon.style.marginRight = '10px';
+            pageIcon.src = "https://s2.googleusercontent.com/s2/favicons?domain";
+            if (url.startsWith('http')) pageIcon.src += "_url";
+            pageIcon.src += `=${url}`;
+
+            return pageIcon;
+        }
+
         // Function to create the page link
         function createPageLink(page) {
             const pageLink = document.createElement('a');
@@ -1348,6 +1359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Append elements to the item in the desired order
             pageListItem.appendChild(createPageCheckbox(bookId));
+            pageListItem.appendChild(createPageIcon(page.url));
             pageListItem.appendChild(createPageLink(page));
             pageListItem.appendChild(createMovePageHandler());
 

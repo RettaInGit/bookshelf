@@ -15,9 +15,9 @@ This is an open source project, you can download and modify it as you like.
 
 # FUTURE IMPLEMENTATIONS
 
+- Use the checkbox to multi-select the pages to drag and drop
 - Pin favorite books
 - Check duplicate pages inside a book
 - Sort pages or books by name
 - Visualize only X pages if there are more than X in a book
 - Add settings in the settings page
-- Add image to pages
