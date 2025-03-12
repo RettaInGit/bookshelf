@@ -267,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             if (compatibleOneTab.checked) {
+                let newBookIndex = 0;
                 let newPages = [];
 
                 const rows = importExportTextArea.value.split('\n');
@@ -306,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         };
 
                         // Add the new book to the list
-                        shelf.books.unshift(newBook);
+                        shelf.books.splice(newBookIndex++, 0, newBook);
 
                         // Reset the new pages list
                         newPages = [];
