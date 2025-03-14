@@ -1560,6 +1560,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     // Save the updated bookshelfData
                     saveBookshelfDataToStorage();
+
+                    // Click to deselect all items
+                    if ((evt.from !== evt.to) || (newIndex !== itemIndexes[0])) bookList.click();
                 },
             });
 
@@ -1601,6 +1604,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Set sorting parameters for the shelves
         Sortable.create(shelfList, {
+            group: {
+                name: 'moveShelf',
+            },
             handle: '.moveShelfHandler',
             animation: 150,
 
@@ -1612,6 +1618,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
+
+                // Click to deselect all items
+                if ((evt.from !== evt.to) || (evt.newIndex !== evt.oldIndex)) bookList.click();
             },
         });
 
@@ -1746,6 +1755,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
+
+                // Click to deselect all items
+                if ((evt.from !== evt.to) || (newIndex !== itemIndex)) bookList.click();
             },
         });
 
@@ -1903,6 +1915,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Save the updated bookshelfData
                 saveBookshelfDataToStorage();
+
+                // Click to deselect all items
+                if ((evt.from !== evt.to) || (newIndex !== itemIndexes[0])) bookList.click();
             }
         });
 
