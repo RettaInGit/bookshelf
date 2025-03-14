@@ -1318,6 +1318,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         book.pages.splice(pageIndex, 1);
                         pageListElem.removeChild(pageListElem.children[pageIndex]);
 
+                        // Update pages count
+                        updatePageCount(book.id);
+
                         // Save the updated bookshelfData
                         saveBookshelfDataToStorage();
                     }
