@@ -1833,6 +1833,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 updatePageCount(page.bookId);  // Update pages count
                             }
                         }
+                        else if (startBook.pages.length === 0) {
+                            startShelf.books = startShelf.books.filter(book => book.id !== startBook.id);
+                        }
                     });
 
                     // Hide the message (when the new book is dropped in an empty shelf)
@@ -1869,6 +1872,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                     updatePageCount(page.bookId);  // Update pages count
                                 }
+                            }
+                            else if (startBook.pages.length === 0) {
+                                startShelf.books = startShelf.books.filter(book => book.id !== startBook.id);
                             }
 
                             // generate new ID
