@@ -1422,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let pagesDragged = Array.from(itemIndexes, index => startBook.pages[index]);
 
                     // Get new index
-                    let newIndex = evt.newIndex;
+                    let newIndex = evt.newIndicies.length > 0 ? evt.newIndicies[0].index : evt.newIndex;
 
                     // Move pages according to the destination
                     if (evt.from === evt.to) {
@@ -1669,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let pagesDragged = structuredClone(bookDragged.pages);
 
                 // Get new index
-                let newIndex = evt.newIndex;
+                let newIndex = evt.newIndicies.length > 0 ? evt.newIndicies[0].index : evt.newIndex;
 
                 // Move pages according to the destination
                 if (evt.from === evt.to) {
@@ -1804,7 +1804,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 pagesToMove = pagesToMove.filter(page => !pagesDragged.includes(page));
 
                 // Get new index
-                let newIndex = evt.newIndex;
+                let newIndex = evt.newIndicies.length > 0 ? evt.newIndicies[0].index : evt.newIndex;
 
                 // Move pages according to the destination
                 if (evt.from === evt.to) {
