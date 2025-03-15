@@ -514,26 +514,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Get all checkboxes
         const dropAreaCheckboxes = dropAreaList.querySelectorAll('.pageCheckbox');
 
-        // Collect the indices of pages to remove
-        const indicesToRemove = [];
+        // Collect the indexes of pages to remove
+        const indexesToRemove = [];
         dropAreaCheckboxes.forEach((checkbox, checkboxIndex) => {
             if (checkbox.checked) {
-                indicesToRemove.push(checkboxIndex);
+                indexesToRemove.push(checkboxIndex);
             }
         });
 
-        if (indicesToRemove.length === 0) {
+        if (indexesToRemove.length === 0) {
             alert('Please select at least one page to remove.');
             return;
         }
 
         // Confirm to remove the pages
-        if (!confirm(`Are you sure you want to remove the selected page${indicesToRemove.length !== 1 ? 's' : ''}?`)) {
+        if (!confirm(`Are you sure you want to remove the selected page${indexesToRemove.length !== 1 ? 's' : ''}?`)) {
             return;
         }
 
         // Remove pages starting from the highest index to avoid index shifting
-        indicesToRemove.sort((a, b) => b - a).forEach((index) => {
+        indexesToRemove.sort((a, b) => b - a).forEach((index) => {
             // Remove 'pageMoved' class
             if (pagesToMove[index].shelfId === selectedShelfId) {
                 getBookListItem(pagesToMove[index].bookId).querySelector(`.pageListItem[data-page-id="${pagesToMove[index].id}"]`).classList.remove('pageMoved');
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             removeShelfButton.addEventListener('click', () => {
                 let shelfRemoved = false;
 
-                    if (shelfId === selectedShelfId) {
+                if (shelfId === selectedShelfId) {
                     if (confirm('Are you sure you want to reset this shelf?')) {
                         // Get the index of the selected shelf
                         const shelfIndex = bookshelfData.findIndex(shelf => shelf.id === shelfId);
@@ -778,14 +778,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Save updated shelf
                         saveBookshelfDataToStorage();
                     }
-                    }
-                    else if (confirm('Are you sure you want to remove this shelf?')) {
-                        // Remove shelf from data and save it
-                        bookshelfData = bookshelfData.filter(shelf => shelf.id !== shelfId);
-                        saveBookshelfDataToStorage();
+                }
+                else if (confirm('Are you sure you want to remove this shelf?')) {
+                    // Remove shelf from data and save it
+                    bookshelfData = bookshelfData.filter(shelf => shelf.id !== shelfId);
+                    saveBookshelfDataToStorage();
 
-                        // Remove shelf element
-                        shelfList.removeChild(getShelfListItem(shelfId));
+                    // Remove shelf element
+                    shelfList.removeChild(getShelfListItem(shelfId));
 
                     // Signal that the shelf has been removed
                     shelfRemoved = true;
@@ -1080,28 +1080,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const pageList = bookListItem.querySelector('.pageList');
                 const pageCheckboxes = bookListItem.querySelectorAll('.pageCheckbox');
 
-                // Collect the indices of pages to remove
-                const indicesToRemove = [];
+                // Collect the indexes of pages to remove
+                const indexesToRemove = [];
                 pageCheckboxes.forEach((checkbox, checkboxIndex) => {
                     if (checkbox.checked) {
-                        indicesToRemove.push(checkboxIndex);
+                        indexesToRemove.push(checkboxIndex);
                     }
                 });
 
-                if (indicesToRemove.length === 0) {
+                if (indexesToRemove.length === 0) {
                     alert('Please select at least one page to remove.');
                     event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
                 // Confirm to remove the pages
-                if (!confirm(`Are you sure you want to remove the selected page${indicesToRemove.length !== 1 ? 's' : ''}?`)) {
+                if (!confirm(`Are you sure you want to remove the selected page${indexesToRemove.length !== 1 ? 's' : ''}?`)) {
                     event.stopPropagation();  // Do not reach other elements
                     return;
                 }
 
                 // Remove pages starting from the highest index to avoid index shifting
-                indicesToRemove.sort((a, b) => b - a).forEach((index) => {
+                indexesToRemove.sort((a, b) => b - a).forEach((index) => {
                     // Remove the page from the moved ones too
                     const pageIndex = pagesToMove.findIndex(item => item.shelfId === selectedShelfId && item.bookId === bookId && item.id === book.pages[index].id);
                     if (pageIndex !== -1) {
@@ -1481,18 +1481,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     else if (evt.to === dropAreaList) {
                         // Filter out the pages that are already in 'pagesToMove'
-                        const filteringIndices = [];
+                        const filteringIndexes = [];
                         pagesDragged = structuredClone(pagesDragged);
                         pagesDragged.forEach((page, pageIndex) => {
                             if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === startBookId && item.id === page.id)) {
-                                filteringIndices.push(pageIndex);
+                                filteringIndexes.push(pageIndex);
                             }
                             else {
                                 page.shelfId = selectedShelfId;
                                 page.bookId = startBookId;
                             }
                         });
-                        pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndices.includes(pageIndex));
+                        pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndexes.includes(pageIndex));
 
                         // Save pages dragged
                         pagesToMove.splice(newIndex, 0, ...pagesDragged);
@@ -1501,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // Remove the 'pageSelected' class
                             item.classList.remove('pageSelected');
 
-                            if (pagesDragged.length !== 0 && !filteringIndices.includes(itemIndex)) {
+                            if (pagesDragged.length !== 0 && !filteringIndexes.includes(itemIndex)) {
                                 // Create a clone of the dragged item
                                 const clone = item.cloneNode(true);
                                 const cloneCheckbox = clone.children[0];  // TODO: change this hack
@@ -1678,17 +1678,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 else if (evt.to === dropAreaList) {
                     // Filter out the pages that are already in 'pagesToMove'
-                    const filteringIndices = [];
+                    const filteringIndexes = [];
                     pagesDragged.forEach((page, pageIndex) => {
                         if (pagesToMove.some(item => item.shelfId === selectedShelfId && item.bookId === bookDragged.id && item.id === page.id)) {
-                            filteringIndices.push(pageIndex);
+                            filteringIndexes.push(pageIndex);
                         }
                         else {
                             page.shelfId = selectedShelfId;
                             page.bookId = bookDragged.id;
                         }
                     });
-                    pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndices.includes(pageIndex));
+                    pagesDragged = pagesDragged.filter((_, pageIndex) => !filteringIndexes.includes(pageIndex));
 
                     // Save pages dragged
                     pagesToMove.splice(newIndex, 0, ...pagesDragged);
@@ -1704,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Add all the book pages in the drop area list
                     if (pagesDragged.length !== 0) {
                         itemDragged.querySelectorAll('.pageListItem').forEach((page, pageIndex) => {
-                            if (!filteringIndices.includes(pageIndex)) {
+                            if (!filteringIndexes.includes(pageIndex)) {
                                 // Create a clone of the page
                                 const clone = page.cloneNode(true);
                                 const cloneCheckbox = clone.children[0];  // TODO: change this hack
