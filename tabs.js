@@ -270,6 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let newBookIndex = 0;
                 let newPages = [];
 
+                importExportTextArea.value += '\n';
                 const rows = importExportTextArea.value.split('\n');
                 rows.forEach((row) => {
                     const splitSimbolIndex = row.indexOf('|');
