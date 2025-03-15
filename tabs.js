@@ -794,10 +794,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Remove pages from the drop area list (starting from the highest index to avoid index shifting)
                 if (shelfRemoved) {
-                    let indexesToRemove = [];
-                    pagesToMove.forEach((page, pageIndex) => {
-                        if (page.shelfId === shelfId) {
-                            indexesToRemove.push(pageIndex);
+                    const indexesToRemove = [];
+                    pagesToMove.forEach((item, itemIndex) => {
+                        if (item.shelfId === shelfId) {
+                            indexesToRemove.push(itemIndex);
                         }
                     });
                     indexesToRemove.sort((a, b) => b - a).forEach(index => {
@@ -1053,6 +1053,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Save the updated bookshelfData
                         saveBookshelfDataToStorage();
                     }
+
+                    // Remove pages from the drop area list (starting from the highest index to avoid index shifting)
+                    const indexesToRemove = [];
+                    pagesToMove.forEach((item, itemIndex) => {
+                        if (item.shelfId === shelf.id && item.bookId === book.id && pagesToRestore.some(page => page.id === item.id)) {
+                            indexesToRemove.push(itemIndex);
+                        }
+                    });
+                    indexesToRemove.sort((a, b) => b - a).forEach(index => {
+                        pagesToMove.splice(index, 1);
+                        dropAreaList.removeChild(dropAreaList.children[index]);
+                    });
                 }
 
                 // Do not reach other elements
@@ -1339,6 +1351,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Save the updated bookshelfData
                         saveBookshelfDataToStorage();
+                    }
+
+                    // Remove the page from the drop area list
+                    const pageIndex = pagesToMove.findIndex(item => item.shelfId === shelf.id && item.bookId === book.id && item.id === pageId);
+                    if (pageIndex !== -1) {
+                        pagesToMove.splice(pageIndex, 1);
+                        dropAreaList.removeChild(dropAreaList.children[pageIndex]);
                     }
                 }
             });
