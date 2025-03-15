@@ -756,9 +756,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Remove shelf
             removeShelfButton.addEventListener('click', () => {
-                if (bookshelfData.length > 1) {
+                let shelfRemoved = false;
+
                     if (shelfId === selectedShelfId) {
-                        alert('Please choose another shelf before removing this.');
+                    if (confirm('Are you sure you want to reset this shelf?')) {
+                        // Get the index of the selected shelf
+                        const shelfIndex = bookshelfData.findIndex(shelf => shelf.id === shelfId);
+
+                        // Remove all books from this shelf
+                        bookshelfData[shelfIndex].books = [];
+
+                        // Clear existing content
+                        bookList.innerHTML = '';
+
+                        // Signal that the shelf has been removed
+                        shelfRemoved = true;
+
+                        // Display the message that there are no page saved
+                        displayResultMessage();
+
+                        // Save updated shelf
+                        saveBookshelfDataToStorage();
+                    }
                     }
                     else if (confirm('Are you sure you want to remove this shelf?')) {
                         // Remove shelf from data and save it
@@ -767,27 +786,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         // Remove shelf element
                         shelfList.removeChild(getShelfListItem(shelfId));
-                    }
+
+                    // Signal that the shelf has been removed
+                    shelfRemoved = true;
                 }
-                else if (confirm('Are you sure you want to reset this shelf?')) {
-                    // Remove all books from this shelf
-                    bookshelfData[0].books = [];
 
-                    // Change shelf name
-                    bookshelfData[0].title = "Shelf 1";
-
-                    // Update the selected shelf title
-                    changeSelectedShelfTitle(bookshelfData[0].title);
-                    shelfList.children[0].querySelector('.shelfTitle').textContent = bookshelfData[0].title;
-
-                    // Save updated shelf
-                    saveBookshelfDataToStorage();
-
-                    // Clear existing content
-                    bookList.innerHTML = '';
-
-                    // Display the message that there are no page saved
-                    displayResultMessage();
+                // Remove pages from the drop area list (starting from the highest index to avoid index shifting)
+                if (shelfRemoved) {
+                    let indexesToRemove = [];
+                    pagesToMove.forEach((page, pageIndex) => {
+                        if (page.shelfId === shelfId) {
+                            indexesToRemove.push(pageIndex);
+                        }
+                    });
+                    indexesToRemove.sort((a, b) => b - a).forEach(index => {
+                        pagesToMove.splice(index, 1);
+                        dropAreaList.removeChild(dropAreaList.children[index]);
+                    });
                 }
             });
 
